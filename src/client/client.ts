@@ -76,26 +76,28 @@ ground.addin(scene, world)
 ground.updatePosition()
 
 // vehicle
-const chassisShape = new CANNON.Box(new CANNON.Vec3(1, 2, 0.5))
-const chassisBody = new CANNON.Body({
-    mass: 150,
-    shape: chassisShape,
-    position: new CANNON.Vec3(0, 0, 5),
-    // angularVelocity: new CANNON.Vec3(0, 0, 0.5),
-})
-const CAR = new PhysicalObject(
+const chassisSizeX = 2
+const chassisSizeY = 4
+const chassisSizeZ = 1
+const chassisCANNONMaterial = new CANNON.Material('chassis')
+const chassis = new PhysicalObject(
     new THREE.Mesh(
-        new THREE.BoxGeometry(2, 4, 1),
+        new THREE.BoxGeometry(chassisSizeX, chassisSizeY, chassisSizeZ),
         new THREE.MeshPhongMaterial({
             color: 0x66ccff,
         }),
     ),
-    chassisBody,
+    new CANNON.Body({
+        mass: 300,
+        shape: new CANNON.Box(new CANNON.Vec3(chassisSizeX / 2, chassisSizeY / 2, chassisSizeZ / 2)),
+        position: new CANNON.Vec3(0, 0, 5),
+        material: chassisCANNONMaterial,
+        // angularVelocity: new CANNON.Vec3(0, 0, 0.5),
+    }),
 )
-scene.add(CAR.mesh)
-CAR.updatePosition()
+scene.add(chassis.mesh)
 const vehicle = new CANNON.RaycastVehicle({
-    chassisBody,
+    chassisBody: chassis.body,
     indexRightAxis: 0,
     indexForwardAxis: 1,
     indexUpAxis: 2,
@@ -110,34 +112,33 @@ const wheelOptions = {
     dampingCompression: 4.4,
     maxSuspensionForce: 100000,
     rollInfluence: 0.01,
-    axleLocal: new CANNON.Vec3(0, 1, 0),
+    axleLocal: new CANNON.Vec3(1, 0, 0),
     chassisConnectionPointLocal: new CANNON.Vec3(-1, 1, 0),
     maxSuspensionTravel: 0.3,
     customSlidingRotationalSpeed: -30,
     useCustomSlidingRotationalSpeed: true,
 }
-wheelOptions.chassisConnectionPointLocal.set(2, 2, 0)
+wheelOptions.chassisConnectionPointLocal.set(1, 1, -0)
 vehicle.addWheel(wheelOptions)
-wheelOptions.chassisConnectionPointLocal.set(-2, 2, 0)
+wheelOptions.chassisConnectionPointLocal.set(-1, 1, 0)
 vehicle.addWheel(wheelOptions)
-wheelOptions.chassisConnectionPointLocal.set(2, -2, 0)
+wheelOptions.chassisConnectionPointLocal.set(1, -1, 0)
 vehicle.addWheel(wheelOptions)
-wheelOptions.chassisConnectionPointLocal.set(-2, -2, 0)
+wheelOptions.chassisConnectionPointLocal.set(-1, -1, 0)
 vehicle.addWheel(wheelOptions)
 vehicle.addToWorld(world)
 const wheels: PhysicalObject[] = []
 const wheelCANNONMaterial = new CANNON.Material('wheel')
-vehicle.wheelInfos.forEach((wheel) => {
+vehicle.wheelInfos.forEach(wheel => {
     const cylinderShape = new CANNON.Cylinder(wheel.radius, wheel.radius, wheel.radius / 2, 20)
     const q = new CANNON.Quaternion()
     q.setFromAxisAngle(new CANNON.Vec3(0, 0, 1), Math.PI / 2)
-    const body = 
-        new CANNON.Body({
-            mass: 0,
-            material: wheelCANNONMaterial,
-            type: CANNON.Body.KINEMATIC,
-            collisionFilterGroup: 0, // turn off collisions
-        })
+    const body = new CANNON.Body({
+        mass: 10,
+        material: wheelCANNONMaterial,
+        type: CANNON.Body.KINEMATIC,
+        collisionFilterGroup: 0, // turn off collisions
+    })
     body.addShape(cylinderShape, new CANNON.Vec3(), q)
     // body.addShape(cylinderShape)
     // body.quaternion.copy(q)
@@ -152,8 +153,9 @@ vehicle.wheelInfos.forEach((wheel) => {
     )
     console.log(q)
     console.log(wheelObj.body.quaternion)
-    wheelObj.updatePosition()
-    wheelObj.addin(scene, world)
+    world.addBody(wheelObj.body)
+    scene.add(wheelObj.mesh)
+    // wheelObj.addin(scene, world)
     wheels.push(wheelObj)
 })
 world.addEventListener('postStep', () => {
@@ -166,7 +168,13 @@ world.addEventListener('postStep', () => {
     wheelObj.updatePosition()
     const q = new THREE.Quaternion()
     q.setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI / 2)
-    wheelObj.mesh.applyQuaternion(q)
+    wheelObj.mesh.quaternion.copy(q)
+    wheelObj.mesh.applyQuaternion(new THREE.Quaternion(
+        transform.quaternion.x,
+        transform.quaternion.y,
+        transform.quaternion.z,
+        transform.quaternion.w,
+    ))
   }
 })
 
@@ -175,7 +183,12 @@ const wheel_ground = new CANNON.ContactMaterial(wheelCANNONMaterial, groundCANNO
     restitution: 0,
     contactEquationStiffness: 1000,
 })
+const chassis_ground = new CANNON.ContactMaterial(chassisCANNONMaterial, groundCANNONmaterial, {
+    friction: 0.3,
+    restitution: 0.3,
+})
 world.addContactMaterial(wheel_ground)
+world.addContactMaterial(chassis_ground)
 
 // const carSize = 1
 // const car = new PhysicalObject(
@@ -216,6 +229,9 @@ for (let i = 0; i < 100; i++) {
     jump.updatePosition()
 }
 
+
+world.defaultContactMaterial.friction = 0
+
 window.addEventListener('resize', onWindowResize, false)
 function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight
@@ -223,6 +239,74 @@ function onWindowResize() {
     renderer.setSize(window.innerWidth, window.innerHeight)
     render()
 }
+
+
+// Add force on keydown
+document.addEventListener('keydown', (event) => {
+    const maxSteerVal = 0.5
+    const maxForce = 1000
+    const brakeForce = 1000000
+    switch (event.key) {
+        case 'w':
+        case 'ArrowUp':
+            vehicle.applyEngineForce(maxForce, 2)
+            vehicle.applyEngineForce(maxForce, 3)
+            break
+        case 's':
+        case 'ArrowDown':
+            vehicle.applyEngineForce(-maxForce, 2)
+            vehicle.applyEngineForce(-maxForce, 3)
+            break
+        case 'a':
+        case 'ArrowLeft':
+            vehicle.setSteeringValue(maxSteerVal, 0)
+            vehicle.setSteeringValue(maxSteerVal, 1)
+            break
+        case 'd':
+        case 'ArrowRight':
+            vehicle.setSteeringValue(-maxSteerVal, 0)
+            vehicle.setSteeringValue(-maxSteerVal, 1)
+            break
+        case 'b':
+            vehicle.setBrake(brakeForce, 0)
+            vehicle.setBrake(brakeForce, 1)
+            vehicle.setBrake(brakeForce, 2)
+            vehicle.setBrake(brakeForce, 3)
+            break
+    }
+})
+
+// Reset force on keyup
+document.addEventListener('keyup', (event) => {
+    switch (event.key) {
+        case 'w':
+        case 'ArrowUp':
+            vehicle.applyEngineForce(0, 2)
+            vehicle.applyEngineForce(0, 3)
+            break
+        case 's':
+        case 'ArrowDown':
+            vehicle.applyEngineForce(0, 2)
+            vehicle.applyEngineForce(0, 3)
+            break
+        case 'a':
+        case 'ArrowLeft':
+            vehicle.setSteeringValue(0, 0)
+            vehicle.setSteeringValue(0, 1)
+            break
+        case 'd':
+        case 'ArrowRight':
+            vehicle.setSteeringValue(0, 0)
+            vehicle.setSteeringValue(0, 1)
+            break
+        case 'b':
+            vehicle.setBrake(0, 0)
+            vehicle.setBrake(0, 1)
+            vehicle.setBrake(0, 2)
+            vehicle.setBrake(0, 3)
+            break
+    }
+})
 
 // keyboard
 const keyMap: { [id: string]: boolean } = {}
@@ -235,49 +319,38 @@ document.addEventListener('keyup', onDocumentKey, false)
 const clock = new THREE.Clock()
 let delta
 
-const maxForce = 1000
-const maxSteerVal = 0.5
-
 function animate() {
     requestAnimationFrame(animate)
     delta = Math.min(clock.getDelta(), 0.1)
     world.step(delta)
     // car.updatePosition()
-    CAR.updatePosition()
+    chassis.updatePosition()
     camera.position.set(
-        CAR.mesh.position.x,
-        CAR.mesh.position.y - 5,
-        CAR.mesh.position.z + 5,
+        chassis.mesh.position.x,
+        chassis.mesh.position.y - 5,
+        chassis.mesh.position.z + 5,
     )
     if (keyMap['KeyW'] || keyMap['ArrowUp']) {
         // CAR.body.velocity.y += 10 * delta
-        vehicle.applyEngineForce(-maxForce, 2)
-        vehicle.applyEngineForce(-maxForce, 3)
     }
     if (keyMap['KeyS'] || keyMap['ArrowDown']) {
         // CAR.body.velocity.y -= 10 * delta
-        vehicle.applyEngineForce(maxForce, 2)
-        vehicle.applyEngineForce(maxForce, 3)
     }
     if (keyMap['KeyA'] || keyMap['ArrowLeft']) {
         // CAR.body.velocity.x -= 10 * delta
-        vehicle.setSteeringValue(maxSteerVal, 0)
-        vehicle.setSteeringValue(maxSteerVal, 1)
     }
     if (keyMap['KeyD'] || keyMap['ArrowRight']) {
         // CAR.body.velocity.x += 10 * delta
-        vehicle.setSteeringValue(-maxSteerVal, 0)
-        vehicle.setSteeringValue(-maxSteerVal, 1)
     }
     light.position.set(
-        CAR.mesh.position.x + 2,
-        CAR.mesh.position.y + 4,
-        CAR.mesh.position.z + 2,
+        chassis.mesh.position.x + 2,
+        chassis.mesh.position.y + 4,
+        chassis.mesh.position.z + 2,
     )
     light.target.position.set(
-        CAR.mesh.position.x - 2,
-        CAR.mesh.position.y - 4,
-        CAR.mesh.position.z - 2,
+        chassis.mesh.position.x - 2,
+        chassis.mesh.position.y - 4,
+        chassis.mesh.position.z - 2,
     )
     // scene.add( new THREE.DirectionalLightHelper(light) )
     cannonDebugger.update()
