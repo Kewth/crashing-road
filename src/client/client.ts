@@ -2,8 +2,8 @@ import * as THREE from 'three'
 import * as CANNON from 'cannon-es'
 import CannonDebugger from 'cannon-es-debugger'
 import { bound } from './bound'
-import { car } from './car'
 import { jumpGenerator } from './jump'
+import { Car } from './car'
 
 const scene = new THREE.Scene()
 const world = new CANNON.World()
@@ -34,6 +34,7 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap
 document.body.appendChild(renderer.domElement)
 
 bound.addin(scene, world)
+const car = new Car(0, 0, 5)
 car.addin(scene, world)
 
 const wheel_ground = new CANNON.ContactMaterial(car.wheelCANNONMaterial, bound.groundCANNONmaterial, {
