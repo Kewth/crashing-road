@@ -111,6 +111,42 @@ export const car = {
           }
         })
     },
+    moveForward() {
+        vehicle.applyEngineForce(maxForce, 2)
+        vehicle.applyEngineForce(maxForce, 3)
+    },
+    moveBackword() {
+        vehicle.applyEngineForce(-maxForce, 2)
+        vehicle.applyEngineForce(-maxForce, 3)
+    },
+    stopMove() {
+        vehicle.applyEngineForce(0, 2)
+        vehicle.applyEngineForce(0, 3)
+    },
+    turnLeft() {
+        vehicle.setSteeringValue(maxSteerVal, 0)
+        vehicle.setSteeringValue(maxSteerVal, 1)
+    },
+    turnRight() {
+        vehicle.setSteeringValue(-maxSteerVal, 0)
+        vehicle.setSteeringValue(-maxSteerVal, 1)
+    },
+    stopTurn() {
+        vehicle.setSteeringValue(0, 0)
+        vehicle.setSteeringValue(0, 1)
+    },
+    brake() {
+        vehicle.setBrake(brakeForce, 0)
+        vehicle.setBrake(brakeForce, 1)
+        vehicle.setBrake(brakeForce, 2)
+        vehicle.setBrake(brakeForce, 3)
+    },
+    stopBrake() {
+        vehicle.setBrake(0, 0)
+        vehicle.setBrake(0, 1)
+        vehicle.setBrake(0, 2)
+        vehicle.setBrake(0, 3)
+    },
     update() {
         chassis.update(),
         wheels.forEach(w => w.update())
@@ -121,29 +157,22 @@ export const car = {
             switch (event.key) {
                 case 'w':
                 case 'ArrowUp':
-                    vehicle.applyEngineForce(maxForce, 2)
-                    vehicle.applyEngineForce(maxForce, 3)
+                    this.moveForward()
                     break
                 case 's':
                 case 'ArrowDown':
-                    vehicle.applyEngineForce(-maxForce, 2)
-                    vehicle.applyEngineForce(-maxForce, 3)
+                    this.moveBackword()
                     break
                 case 'a':
                 case 'ArrowLeft':
-                    vehicle.setSteeringValue(maxSteerVal, 0)
-                    vehicle.setSteeringValue(maxSteerVal, 1)
+                    this.turnLeft()
                     break
                 case 'd':
                 case 'ArrowRight':
-                    vehicle.setSteeringValue(-maxSteerVal, 0)
-                    vehicle.setSteeringValue(-maxSteerVal, 1)
+                    this.turnRight()
                     break
                 case 'b':
-                    vehicle.setBrake(brakeForce, 0)
-                    vehicle.setBrake(brakeForce, 1)
-                    vehicle.setBrake(brakeForce, 2)
-                    vehicle.setBrake(brakeForce, 3)
+                    this.brake()
                     break
             }
         })
@@ -152,29 +181,22 @@ export const car = {
             switch (event.key) {
                 case 'w':
                 case 'ArrowUp':
-                    vehicle.applyEngineForce(0, 2)
-                    vehicle.applyEngineForce(0, 3)
+                    this.stopMove()
                     break
                 case 's':
                 case 'ArrowDown':
-                    vehicle.applyEngineForce(0, 2)
-                    vehicle.applyEngineForce(0, 3)
+                    this.stopMove()
                     break
                 case 'a':
                 case 'ArrowLeft':
-                    vehicle.setSteeringValue(0, 0)
-                    vehicle.setSteeringValue(0, 1)
+                    this.stopTurn()
                     break
                 case 'd':
                 case 'ArrowRight':
-                    vehicle.setSteeringValue(0, 0)
-                    vehicle.setSteeringValue(0, 1)
+                    this.stopTurn()
                     break
                 case 'b':
-                    vehicle.setBrake(0, 0)
-                    vehicle.setBrake(0, 1)
-                    vehicle.setBrake(0, 2)
-                    vehicle.setBrake(0, 3)
+                    this.stopBrake()
                     break
             }
         })

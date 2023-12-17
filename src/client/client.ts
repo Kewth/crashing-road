@@ -3,7 +3,6 @@ import * as CANNON from 'cannon-es'
 import CannonDebugger from 'cannon-es-debugger'
 import { bound } from './bound'
 import { car } from './car'
-import { PhysicalObject } from './physicalObject'
 import { jumpGenerator } from './jump'
 
 const scene = new THREE.Scene()
