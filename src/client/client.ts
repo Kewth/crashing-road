@@ -4,6 +4,7 @@ import CannonDebugger from 'cannon-es-debugger'
 import { bound } from './bound'
 import { jumpGenerator } from './jump'
 import { Car } from './car'
+import { dummyAI } from './dummyAI'
 
 const scene = new THREE.Scene()
 const world = new CANNON.World()
@@ -90,6 +91,8 @@ function animate() {
     )
     // scene.add( new THREE.DirectionalLightHelper(light) )
     // cannonDebugger.update()
+    // car.moveForward()
+    dummyAI(car)
     render()
 }
 
