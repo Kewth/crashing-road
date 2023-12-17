@@ -97,7 +97,7 @@ export class Car {
             this.wheels.push(wheelObj)
         })
     }
-    // add into world
+    // add into world, call this after initialization
     addin(scene: THREE.Scene, world: CANNON.World) {
         scene.add(this.chassis.mesh)
         this.vehicle.addToWorld(world)
@@ -112,6 +112,7 @@ export class Car {
           }
         })
     }
+    // moving logical
     moveForward() {
         this.vehicle.applyEngineForce(maxForce, 2)
         this.vehicle.applyEngineForce(maxForce, 3)
@@ -148,10 +149,12 @@ export class Car {
         this.vehicle.setBrake(0, 2)
         this.vehicle.setBrake(0, 3)
     }
+    // update information to render
     update() {
         this.chassis.update(),
         this.wheels.forEach(w => w.update())
     }
+    // call this after initialization if this car is controlled by player
     addKeyBinding() {
         // Add force on keydown
         document.addEventListener('keydown', (event) => {
