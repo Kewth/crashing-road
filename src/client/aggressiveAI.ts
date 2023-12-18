@@ -23,7 +23,7 @@ function aggressiveAI(car: Car, target: Car) {
     const relDisp = targetpos.clone().sub(pos)
     const v = castToXY(castToVector3(car.chassis.body.velocity))
     const targetv = castToXY(castToVector3(target.chassis.body.velocity))
-    const maxv = 12
+    const maxv = 15
     
     let vcon = new PIDController(0.1, 0.05, 0.01)
     let xcon = new PIDController(0.1, 0, 0.5)

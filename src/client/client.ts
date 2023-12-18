@@ -106,8 +106,8 @@ function animate() {
     });
     camera.position.set(
         playerCar.chassis.mesh.position.x,
-        playerCar.chassis.mesh.position.y - 5,
-        playerCar.chassis.mesh.position.z + 5,
+        playerCar.chassis.mesh.position.y - 10,
+        playerCar.chassis.mesh.position.z + 10,
     );
     light.position.set(
         playerCar.chassis.mesh.position.x + 2,
