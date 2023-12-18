@@ -1,3 +1,3 @@
 export const Setting = {
-    groundWidth: 20
-}
+    groundWidth: 20,
+};

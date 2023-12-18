@@ -1,16 +1,16 @@
-import * as THREE from 'three'
-import * as CANNON from 'cannon-es'
-import { PhysicalObject } from "./physicalObject"
-import { Setting } from './setting'
+import * as THREE from "three";
+import * as CANNON from "cannon-es";
+import { PhysicalObject } from "./physicalObject";
+import { Setting } from "./setting";
 
-const wallHeight = 5
-const groundMaterial = new THREE.MeshPhongMaterial()
-const wallMaterial = new THREE.MeshPhongMaterial({ color: 0xccccc })
-const groundGeometry = new THREE.PlaneGeometry(Setting.groundWidth, 1000)
-const wallGeometry = new THREE.PlaneGeometry(wallHeight * 2, 1000)
-const planeShape = new CANNON.Plane()
+const wallHeight = 5;
+const groundMaterial = new THREE.MeshPhongMaterial();
+const wallMaterial = new THREE.MeshPhongMaterial({ color: 0xccccc });
+const groundGeometry = new THREE.PlaneGeometry(Setting.groundWidth, 1000);
+const wallGeometry = new THREE.PlaneGeometry(wallHeight * 2, 1000);
+const planeShape = new CANNON.Plane();
 
-const groundCANNONmaterial = new CANNON.Material('ground')
+const groundCANNONmaterial = new CANNON.Material("ground");
 
 const ground = new PhysicalObject(
     new THREE.Mesh(groundGeometry, groundMaterial),
@@ -19,8 +19,8 @@ const ground = new PhysicalObject(
         shape: planeShape,
         material: groundCANNONmaterial,
     }),
-)
-ground.mesh.receiveShadow = true
+);
+ground.mesh.receiveShadow = true;
 
 const leftWall = new PhysicalObject(
     new THREE.Mesh(wallGeometry, wallMaterial),
@@ -29,10 +29,10 @@ const leftWall = new PhysicalObject(
         shape: planeShape,
         material: groundCANNONmaterial,
     }),
-)
-leftWall.body.quaternion.setFromEuler(0, Math.PI / 2, 0)
-leftWall.mesh.receiveShadow = true
-leftWall.body.position.set(-Setting.groundWidth / 2, 0, 0)
+);
+leftWall.body.quaternion.setFromEuler(0, Math.PI / 2, 0);
+leftWall.mesh.receiveShadow = true;
+leftWall.body.position.set(-Setting.groundWidth / 2, 0, 0);
 
 const rightWall = new PhysicalObject(
     new THREE.Mesh(wallGeometry, wallMaterial),
@@ -41,10 +41,10 @@ const rightWall = new PhysicalObject(
         shape: planeShape,
         material: groundCANNONmaterial,
     }),
-)
-rightWall.body.quaternion.setFromEuler(0, -Math.PI / 2, 0)
-rightWall.mesh.receiveShadow = true
-rightWall.body.position.set(Setting.groundWidth / 2, 0, 0)
+);
+rightWall.body.quaternion.setFromEuler(0, -Math.PI / 2, 0);
+rightWall.mesh.receiveShadow = true;
+rightWall.body.position.set(Setting.groundWidth / 2, 0, 0);
 
 // const groundWidth = 60
 // const groundLength = 120
@@ -71,16 +71,16 @@ export const bound = {
     rightWall: rightWall,
     groundCANNONmaterial: groundCANNONmaterial,
     addin(scene: THREE.Scene, world: CANNON.World) {
-        this.ground.addin(scene, world)
-        this.leftWall.addin(scene, world)
-        this.rightWall.addin(scene, world)
-        this.ground.update()
-        this.leftWall.update()
-        this.rightWall.update()
+        this.ground.addin(scene, world);
+        this.leftWall.addin(scene, world);
+        this.rightWall.addin(scene, world);
+        this.ground.update();
+        this.leftWall.update();
+        this.rightWall.update();
     },
     update(dis: number) {
-        this.ground.mesh.position.set(0, dis, 0)
-        this.leftWall.mesh.position.set(-Setting.groundWidth / 2, dis, 0)
-        this.rightWall.mesh.position.set(Setting.groundWidth / 2, dis, 0)
+        this.ground.mesh.position.set(0, dis, 0);
+        this.leftWall.mesh.position.set(-Setting.groundWidth / 2, dis, 0);
+        this.rightWall.mesh.position.set(Setting.groundWidth / 2, dis, 0);
     },
-}
+};
