@@ -197,6 +197,16 @@ export class Car {
         this.vehicle.setBrake(0, 2);
         this.vehicle.setBrake(0, 3);
     }
+    
+
+    applyEngineForce(r: number, i: number) {
+        if (!this.wheelIsBroken[i])
+            this.vehicle.applyEngineForce(r * maxForce, i);
+    }
+    setSteeringValue(r: number, i: number) {
+        if (!this.wheelIsBroken[i])
+            this.vehicle.setSteeringValue(r * maxSteerVal, i);
+    }
 
     /**
      * control the drive of the car
@@ -204,10 +214,8 @@ export class Car {
      */
     drive(r: number) {
         r = Math.max(-1, Math.min(r, 1))
-        if (!this.wheelIsBroken[2])
-            this.vehicle.applyEngineForce(r * maxForce, 2);
-        if (!this.wheelIsBroken[3])
-            this.vehicle.applyEngineForce(r * maxForce, 3);
+        this.applyEngineForce(r, 2)
+        this.applyEngineForce(r, 3)
     }
 
     /**
@@ -216,10 +224,8 @@ export class Car {
      */
     steer(r: number) {
         r = Math.max(-1, Math.min(r, 1))
-        if (!this.wheelIsBroken[0])
-            this.vehicle.setSteeringValue(r * maxSteerVal, 0);
-        if (!this.wheelIsBroken[1])
-            this.vehicle.setSteeringValue(r * maxSteerVal, 1);
+        this.setSteeringValue(r, 0)
+        this.setSteeringValue(r, 1)
     }
 
     // update information to render
@@ -293,7 +299,8 @@ export class Car {
                 if (damage > 3000) {
                     const index = Math.floor(Math.random() * 4);
                     if (this.wheelIsBroken[index] === false) {
-                        this.steer(0);
+                        this.setSteeringValue(0, index);
+                        this.applyEngineForce(0, index);
                         this.wheelIsBroken[index] = true;
                         this.wheels[index].mesh.material = brokenWheelMaterial
                         console.log(t, this.collisionLockUntil)
