@@ -5,6 +5,7 @@ import { bound } from "./bound";
 import { jumpGenerator } from "./jump";
 import { Car } from "./car";
 import { dummyAI } from "./dummyAI";
+import { aggressiveAI } from "./aggressiveAI";
 
 const scene = new THREE.Scene();
 const world = new CANNON.World();
@@ -35,8 +36,11 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
 bound.addin(scene, world);
-const car = new Car(0, 0, 5);
+const car = new Car(0, 0, 2);
 car.addin(scene, world);
+
+const playerCar = new Car(0, 20, 2)
+playerCar.addin(scene, world)
 
 const wheel_ground = new CANNON.ContactMaterial(
     car.wheelCANNONMaterial,
@@ -58,7 +62,7 @@ const chassis_ground = new CANNON.ContactMaterial(
 // world.addContactMaterial(wheel_ground)
 // world.addContactMaterial(chassis_ground)
 
-car.addKeyBinding();
+playerCar.addKeyBinding();
 
 window.addEventListener("resize", onWindowResize, false);
 function onWindowResize() {
@@ -76,31 +80,32 @@ function animate() {
     delta = Math.min(clock.getDelta(), 0.1);
     world.step(delta);
     car.update();
-    const dis = car.chassis.mesh.position.y;
+    playerCar.update()
+    const dis = playerCar.chassis.mesh.position.y;
     bound.update(dis);
     jumpGenerator.generate(dis).forEach((j) => {
         j.update();
         j.addin(scene, world);
     });
     camera.position.set(
-        car.chassis.mesh.position.x,
-        car.chassis.mesh.position.y - 5,
-        car.chassis.mesh.position.z + 5,
+        playerCar.chassis.mesh.position.x,
+        playerCar.chassis.mesh.position.y - 5,
+        playerCar.chassis.mesh.position.z + 5,
     );
     light.position.set(
-        car.chassis.mesh.position.x + 2,
-        car.chassis.mesh.position.y + 4,
-        car.chassis.mesh.position.z + 2,
+        playerCar.chassis.mesh.position.x + 2,
+        playerCar.chassis.mesh.position.y + 4,
+        playerCar.chassis.mesh.position.z + 2,
     );
     light.target.position.set(
-        car.chassis.mesh.position.x - 2,
-        car.chassis.mesh.position.y - 4,
-        car.chassis.mesh.position.z - 2,
+        playerCar.chassis.mesh.position.x - 2,
+        playerCar.chassis.mesh.position.y - 4,
+        playerCar.chassis.mesh.position.z - 2,
     );
     // scene.add( new THREE.DirectionalLightHelper(light) )
     // cannonDebugger.update()
     // car.moveForward()
-    dummyAI(car);
+    aggressiveAI(car, playerCar);
     render();
 }
 

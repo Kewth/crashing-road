@@ -48,6 +48,8 @@ export class Car {
     wheels: PhysicalObject[];
     chassisCANNONMaterial;
     wheelCANNONMaterial;
+    world = new CANNON.World;
+    scene = new THREE.Scene
     constructor(posX: number, posY: number, posZ: number) {
         this.chassisCANNONMaterial = chassisCANNONMaterial;
         this.wheelCANNONMaterial = wheelCANNONMaterial;
@@ -68,6 +70,9 @@ export class Car {
             }),
         );
         this.chassis.mesh.castShadow = true;
+
+        
+
         // logical vehicle
         this.vehicle = new CANNON.RaycastVehicle({
             chassisBody: this.chassis.body,
@@ -140,6 +145,8 @@ export class Car {
         scene.add(this.chassis.mesh);
         this.vehicle.addToWorld(world);
         this.wheels.forEach((w) => w.addin(scene, world));
+        this.world = world;
+        this.scene = scene;
         world.addEventListener("postStep", () => {
             for (let i = 0; i < this.vehicle.wheelInfos.length; i++) {
                 this.vehicle.updateWheelTransform(i);
@@ -147,6 +154,25 @@ export class Car {
                 const wheelObj = this.wheels[i];
                 wheelObj.body.position.copy(transform.position);
                 wheelObj.body.quaternion.copy(transform.quaternion);
+            }
+        });
+        // Listen for collisions
+        this.chassis.body.addEventListener("collide", (e: any) => {
+            if (e.contact) {
+                // Get the relative velocity of the collision
+                const velocity = e.contact.getImpactVelocityAlongNormal();
+        
+                // Calculate the damage. This is a simple example, you might want to use a more complex formula.
+                const damage = Math.abs(velocity) * this.chassis.body.mass;
+        
+                // If the chassis's health is 0 or less, remove it from the game.
+                if (damage > 3000) {
+                    if(this.world) {
+                        this.world.removeBody(this.wheels[0].body);
+                        this.scene.remove(this.wheels[0].mesh)
+                    }
+
+                }
             }
         });
     }
@@ -263,4 +289,6 @@ export class Car {
             }
         });
     }
+
+    
 }
