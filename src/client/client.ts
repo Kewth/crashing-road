@@ -73,7 +73,7 @@ const chassis_ground = new CANNON.ContactMaterial(
     },
 );
 // world.addContactMaterial(wheel_ground)
-// world.addContactMaterial(chassis_ground)
+world.addContactMaterial(chassis_ground)
 
 playerCar.addKeyBinding();
 playerCar.addCollisionDetection();

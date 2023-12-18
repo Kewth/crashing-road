@@ -11,6 +11,7 @@ const wallGeometry = new THREE.PlaneGeometry(wallHeight * 2, 1000);
 const planeShape = new CANNON.Plane();
 
 const groundCANNONmaterial = new CANNON.Material("ground");
+const wallCANNONmaterial = new CANNON.Material("wall");
 
 const ground = new PhysicalObject(
     new THREE.Mesh(groundGeometry, groundMaterial),
@@ -27,7 +28,7 @@ const leftWall = new PhysicalObject(
     new CANNON.Body({
         mass: 0,
         shape: planeShape,
-        material: groundCANNONmaterial,
+        material: wallCANNONmaterial,
     }),
 );
 leftWall.body.quaternion.setFromEuler(0, Math.PI / 2, 0);
@@ -39,7 +40,7 @@ const rightWall = new PhysicalObject(
     new CANNON.Body({
         mass: 0,
         shape: planeShape,
-        material: groundCANNONmaterial,
+        material: wallCANNONmaterial,
     }),
 );
 rightWall.body.quaternion.setFromEuler(0, -Math.PI / 2, 0);
