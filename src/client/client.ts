@@ -42,6 +42,19 @@ car.addin(scene, world);
 const playerCar = new Car(0, 20, 2)
 playerCar.addin(scene, world)
 
+// const npcCar = new Car(0, 50, 2)
+// npcCar.addin(scene, world)
+
+let npcCars: Car[] = []
+
+for (let i = 1; i <= 20; i++) {
+    // Code to be executed in each iteration
+    let curCar = new Car(0, 30 + 20 * i, 2)
+    curCar.addin(scene, world)
+    npcCars.push(curCar)
+}
+
+
 const wheel_ground = new CANNON.ContactMaterial(
     car.wheelCANNONMaterial,
     bound.groundCANNONmaterial,
@@ -82,6 +95,9 @@ function animate() {
     world.step(delta);
     car.update();
     playerCar.update();
+    for(let i=0; i<20; i++) {
+        npcCars[i].update()
+    }
     const dis = playerCar.chassis.mesh.position.y;
     bound.update(dis);
     jumpGenerator.generate(dis).forEach((j) => {
@@ -106,6 +122,9 @@ function animate() {
     // scene.add( new THREE.DirectionalLightHelper(light) )
     // cannonDebugger.update()
     aggressiveAI(car, playerCar);
+    for(let i=0; i<20; i++) {
+        dummyAI(npcCars[i])
+    }
     render();
 }
 
