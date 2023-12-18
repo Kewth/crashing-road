@@ -21,6 +21,8 @@ const chassisGeometry = new THREE.BoxGeometry(
     chassisSizeZ,
 );
 const chassisMaterial = new THREE.MeshPhongMaterial({ color: 0x66ccff });
+const wheelMaterial = new THREE.MeshPhongMaterial({ color: 0x66ccff });
+const brokenWheelMaterial = new THREE.MeshPhongMaterial({ color: 0xff4500 });
 
 const chassisCANNONMaterial = new CANNON.Material("chassis");
 const wheelCANNONMaterial = new CANNON.Material("wheel");
@@ -48,8 +50,9 @@ export class Car {
     wheels: PhysicalObject[];
     chassisCANNONMaterial;
     wheelCANNONMaterial;
-    world = new CANNON.World;
-    scene = new THREE.Scene
+    wheelIsBroken: boolean[];
+    collisionLockUntil: number;
+
     constructor(posX: number, posY: number, posZ: number) {
         this.chassisCANNONMaterial = chassisCANNONMaterial;
         this.wheelCANNONMaterial = wheelCANNONMaterial;
@@ -70,9 +73,6 @@ export class Car {
             }),
         );
         this.chassis.mesh.castShadow = true;
-
-        
-
         // logical vehicle
         this.vehicle = new CANNON.RaycastVehicle({
             chassisBody: this.chassis.body,
@@ -106,6 +106,7 @@ export class Car {
         this.vehicle.addWheel(wheelOptions);
         // wheels
         this.wheels = [];
+        this.wheelIsBroken = [];
         const wheelQuaternion = new CANNON.Quaternion();
         wheelQuaternion.setFromAxisAngle(new CANNON.Vec3(0, 0, 1), Math.PI / 2);
         this.vehicle.wheelInfos.forEach((wheel) => {
@@ -123,7 +124,7 @@ export class Car {
                         wheel.radius * 0.5,
                         20,
                     ),
-                    new THREE.MeshPhongMaterial({ color: 0x66ccff }),
+                    wheelMaterial
                 ),
                 new CANNON.Body({
                     mass: 0,
@@ -138,15 +139,16 @@ export class Car {
                 new THREE.Quaternion(q.x, q.y, q.z, q.w),
             );
             this.wheels.push(wheelObj);
+            this.wheelIsBroken.push(false);
         });
+        this.collisionLockUntil = Date.now();
     }
+
     // add into world, call this after initialization
     addin(scene: THREE.Scene, world: CANNON.World) {
         scene.add(this.chassis.mesh);
         this.vehicle.addToWorld(world);
         this.wheels.forEach((w) => w.addin(scene, world));
-        this.world = world;
-        this.scene = scene;
         world.addEventListener("postStep", () => {
             for (let i = 0; i < this.vehicle.wheelInfos.length; i++) {
                 this.vehicle.updateWheelTransform(i);
@@ -156,51 +158,33 @@ export class Car {
                 wheelObj.body.quaternion.copy(transform.quaternion);
             }
         });
-        // Listen for collisions
-        this.chassis.body.addEventListener("collide", (e: any) => {
-            if (e.contact) {
-                // Get the relative velocity of the collision
-                const velocity = e.contact.getImpactVelocityAlongNormal();
-        
-                // Calculate the damage. This is a simple example, you might want to use a more complex formula.
-                const damage = Math.abs(velocity) * this.chassis.body.mass;
-        
-                // If the chassis's health is 0 or less, remove it from the game.
-                if (damage > 3000) {
-                    if(this.world) {
-                        this.world.removeBody(this.wheels[0].body);
-                        this.scene.remove(this.wheels[0].mesh)
-                    }
+    }
 
-                }
-            }
-        });
-    }
     // moving logical
-    moveForward() {
-        this.vehicle.applyEngineForce(maxForce, 2);
-        this.vehicle.applyEngineForce(maxForce, 3);
-    }
-    moveBackword() {
-        this.vehicle.applyEngineForce(-maxForce, 2);
-        this.vehicle.applyEngineForce(-maxForce, 3);
-    }
-    stopMove() {
-        this.vehicle.applyEngineForce(0, 2);
-        this.vehicle.applyEngineForce(0, 3);
-    }
-    turnLeft() {
-        this.vehicle.setSteeringValue(maxSteerVal, 0);
-        this.vehicle.setSteeringValue(maxSteerVal, 1);
-    }
-    turnRight() {
-        this.vehicle.setSteeringValue(-maxSteerVal, 0);
-        this.vehicle.setSteeringValue(-maxSteerVal, 1);
-    }
-    stopTurn() {
-        this.vehicle.setSteeringValue(0, 0);
-        this.vehicle.setSteeringValue(0, 1);
-    }
+    // moveForward() {
+    //     this.vehicle.applyEngineForce(maxForce, 2);
+    //     this.vehicle.applyEngineForce(maxForce, 3);
+    // }
+    // moveBackword() {
+    //     this.vehicle.applyEngineForce(-maxForce, 2);
+    //     this.vehicle.applyEngineForce(-maxForce, 3);
+    // }
+    // stopMove() {
+    //     this.vehicle.applyEngineForce(0, 2);
+    //     this.vehicle.applyEngineForce(0, 3);
+    // }
+    // turnLeft() {
+    //     this.vehicle.setSteeringValue(maxSteerVal, 0);
+    //     this.vehicle.setSteeringValue(maxSteerVal, 1);
+    // }
+    // turnRight() {
+    //     this.vehicle.setSteeringValue(-maxSteerVal, 0);
+    //     this.vehicle.setSteeringValue(-maxSteerVal, 1);
+    // }
+    // stopTurn() {
+    //     this.vehicle.setSteeringValue(0, 0);
+    //     this.vehicle.setSteeringValue(0, 1);
+    // }
     brake() {
         this.vehicle.setBrake(brakeForce, 0);
         this.vehicle.setBrake(brakeForce, 1);
@@ -220,8 +204,10 @@ export class Car {
      */
     drive(r: number) {
         r = Math.max(-1, Math.min(r, 1))
-        this.vehicle.applyEngineForce(r * maxForce, 2);
-        this.vehicle.applyEngineForce(r * maxForce, 3);
+        if (!this.wheelIsBroken[2])
+            this.vehicle.applyEngineForce(r * maxForce, 2);
+        if (!this.wheelIsBroken[3])
+            this.vehicle.applyEngineForce(r * maxForce, 3);
     }
 
     /**
@@ -230,14 +216,17 @@ export class Car {
      */
     steer(r: number) {
         r = Math.max(-1, Math.min(r, 1))
-        this.vehicle.setSteeringValue(r * maxSteerVal, 0);
-        this.vehicle.setSteeringValue(r * maxSteerVal, 1);
+        if (!this.wheelIsBroken[0])
+            this.vehicle.setSteeringValue(r * maxSteerVal, 0);
+        if (!this.wheelIsBroken[1])
+            this.vehicle.setSteeringValue(r * maxSteerVal, 1);
     }
 
     // update information to render
     update() {
         this.chassis.update(), this.wheels.forEach((w) => w.update());
     }
+
     // call this after initialization if this car is controlled by player
     addKeyBinding() {
         // Add force on keydown
@@ -245,19 +234,19 @@ export class Car {
             switch (event.key) {
                 case "w":
                 case "ArrowUp":
-                    this.moveForward();
+                    this.drive(1);
                     break;
                 case "s":
                 case "ArrowDown":
-                    this.moveBackword();
+                    this.drive(-1);
                     break;
                 case "a":
                 case "ArrowLeft":
-                    this.turnLeft();
+                    this.steer(1);
                     break;
                 case "d":
                 case "ArrowRight":
-                    this.turnRight();
+                    this.steer(-1);
                     break;
                 case "b":
                     this.brake();
@@ -269,19 +258,19 @@ export class Car {
             switch (event.key) {
                 case "w":
                 case "ArrowUp":
-                    this.stopMove();
+                    this.drive(0);
                     break;
                 case "s":
                 case "ArrowDown":
-                    this.stopMove();
+                    this.drive(0);
                     break;
                 case "a":
                 case "ArrowLeft":
-                    this.stopTurn();
+                    this.steer(0);
                     break;
                 case "d":
                 case "ArrowRight":
-                    this.stopTurn();
+                    this.steer(0);
                     break;
                 case "b":
                     this.stopBrake();
@@ -290,5 +279,28 @@ export class Car {
         });
     }
 
-    
+    // call this after initialization if this car is controlled by player
+    addCollisionDetection() {
+        // Listen for collisions
+        this.chassis.body.addEventListener("collide", (e: any) => {
+            const t = Date.now();
+            if (e.contact && t >= this.collisionLockUntil) {
+                // Get the relative velocity of the collision
+                const velocity = e.contact.getImpactVelocityAlongNormal();
+                // Calculate the damage. This is a simple example, you might want to use a more complex formula.
+                const damage = Math.abs(velocity) * this.chassis.body.mass;
+                // If the chassis's health is 0 or less, remove it from the game.
+                if (damage > 3000) {
+                    const index = Math.floor(Math.random() * 4);
+                    if (this.wheelIsBroken[index] === false) {
+                        this.steer(0);
+                        this.wheelIsBroken[index] = true;
+                        this.wheels[index].mesh.material = brokenWheelMaterial
+                        console.log(t, this.collisionLockUntil)
+                        this.collisionLockUntil = t + 2000;
+                    }
+                }
+            }
+        });
+    }
 }

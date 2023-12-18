@@ -63,6 +63,7 @@ const chassis_ground = new CANNON.ContactMaterial(
 // world.addContactMaterial(chassis_ground)
 
 playerCar.addKeyBinding();
+playerCar.addCollisionDetection();
 
 window.addEventListener("resize", onWindowResize, false);
 function onWindowResize() {
@@ -80,7 +81,7 @@ function animate() {
     delta = Math.min(clock.getDelta(), 0.1);
     world.step(delta);
     car.update();
-    playerCar.update()
+    playerCar.update();
     const dis = playerCar.chassis.mesh.position.y;
     bound.update(dis);
     jumpGenerator.generate(dis).forEach((j) => {
@@ -104,7 +105,6 @@ function animate() {
     );
     // scene.add( new THREE.DirectionalLightHelper(light) )
     // cannonDebugger.update()
-    // car.moveForward()
     aggressiveAI(car, playerCar);
     render();
 }
