@@ -51,7 +51,7 @@ export class Car {
     wheelIsBroken: boolean[];
     collisionLockUntil: number;
 
-    constructor(posX: number, posY: number, posZ: number) {
+    constructor(posX: number, posY: number, posZ: number, scene: THREE.Scene, world: CANNON.World) {
         // chassis
         this.chassis = new PhysicalObject(
             new THREE.Mesh(chassisGeometry, chassisMaterial),
@@ -138,10 +138,7 @@ export class Car {
             this.wheelIsBroken.push(false);
         });
         this.collisionLockUntil = Date.now();
-    }
-
-    // add into world, call this after initialization
-    addin(scene: THREE.Scene, world: CANNON.World) {
+        // add into scene & world
         scene.add(this.chassis.mesh);
         this.vehicle.addToWorld(world);
         this.wheels.forEach((w) => w.addin(scene, world));
@@ -156,44 +153,12 @@ export class Car {
         });
     }
 
-    // moving logical
-    // moveForward() {
-    //     this.vehicle.applyEngineForce(maxForce, 2);
-    //     this.vehicle.applyEngineForce(maxForce, 3);
-    // }
-    // moveBackword() {
-    //     this.vehicle.applyEngineForce(-maxForce, 2);
-    //     this.vehicle.applyEngineForce(-maxForce, 3);
-    // }
-    // stopMove() {
-    //     this.vehicle.applyEngineForce(0, 2);
-    //     this.vehicle.applyEngineForce(0, 3);
-    // }
-    // turnLeft() {
-    //     this.vehicle.setSteeringValue(maxSteerVal, 0);
-    //     this.vehicle.setSteeringValue(maxSteerVal, 1);
-    // }
-    // turnRight() {
-    //     this.vehicle.setSteeringValue(-maxSteerVal, 0);
-    //     this.vehicle.setSteeringValue(-maxSteerVal, 1);
-    // }
-    // stopTurn() {
-    //     this.vehicle.setSteeringValue(0, 0);
-    //     this.vehicle.setSteeringValue(0, 1);
-    // }
-    brake() {
-        this.vehicle.setBrake(brakeForce, 0);
-        this.vehicle.setBrake(brakeForce, 1);
-        this.vehicle.setBrake(brakeForce, 2);
-        this.vehicle.setBrake(brakeForce, 3);
+    brake(r: number) {
+        this.vehicle.setBrake(r * brakeForce, 0);
+        this.vehicle.setBrake(r * brakeForce, 1);
+        this.vehicle.setBrake(r * brakeForce, 2);
+        this.vehicle.setBrake(r * brakeForce, 3);
     }
-    stopBrake() {
-        this.vehicle.setBrake(0, 0);
-        this.vehicle.setBrake(0, 1);
-        this.vehicle.setBrake(0, 2);
-        this.vehicle.setBrake(0, 3);
-    }
-    
 
     applyEngineForce(r: number, i: number) {
         if (!this.wheelIsBroken[i])
@@ -227,58 +192,6 @@ export class Car {
     // update information to render
     update() {
         this.chassis.update(), this.wheels.forEach((w) => w.update());
-    }
-
-    // call this after initialization if this car is controlled by player
-    addKeyBinding() {
-        // Add force on keydown
-        document.addEventListener("keydown", (event) => {
-            switch (event.key) {
-                case "w":
-                case "ArrowUp":
-                    this.drive(1);
-                    break;
-                case "s":
-                case "ArrowDown":
-                    this.drive(-1);
-                    break;
-                case "a":
-                case "ArrowLeft":
-                    this.steer(1);
-                    break;
-                case "d":
-                case "ArrowRight":
-                    this.steer(-1);
-                    break;
-                case "b":
-                    this.brake();
-                    break;
-            }
-        });
-        // Reset force on keyup
-        document.addEventListener("keyup", (event) => {
-            switch (event.key) {
-                case "w":
-                case "ArrowUp":
-                    this.drive(0);
-                    break;
-                case "s":
-                case "ArrowDown":
-                    this.drive(0);
-                    break;
-                case "a":
-                case "ArrowLeft":
-                    this.steer(0);
-                    break;
-                case "d":
-                case "ArrowRight":
-                    this.steer(0);
-                    break;
-                case "b":
-                    this.stopBrake();
-                    break;
-            }
-        });
     }
 
     // call this after initialization if this car is controlled by player
