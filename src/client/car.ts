@@ -24,8 +24,8 @@ const chassisMaterial = new THREE.MeshPhongMaterial({ color: 0x66ccff });
 const wheelMaterial = new THREE.MeshPhongMaterial({ color: 0x66ccff });
 const brokenWheelMaterial = new THREE.MeshPhongMaterial({ color: 0xff4500 });
 
-const chassisCANNONMaterial = new CANNON.Material("chassis");
-const wheelCANNONMaterial = new CANNON.Material("wheel");
+export const chassisCANNONMaterial = new CANNON.Material("chassis");
+export const wheelCANNONMaterial = new CANNON.Material("wheel");
 
 const wheelOptions = {
     radius: wheelRadius,
@@ -48,14 +48,10 @@ export class Car {
     chassis: PhysicalObject;
     vehicle: CANNON.RaycastVehicle;
     wheels: PhysicalObject[];
-    chassisCANNONMaterial;
-    wheelCANNONMaterial;
     wheelIsBroken: boolean[];
     collisionLockUntil: number;
 
     constructor(posX: number, posY: number, posZ: number) {
-        this.chassisCANNONMaterial = chassisCANNONMaterial;
-        this.wheelCANNONMaterial = wheelCANNONMaterial;
         // chassis
         this.chassis = new PhysicalObject(
             new THREE.Mesh(chassisGeometry, chassisMaterial),
@@ -69,7 +65,7 @@ export class Car {
                     ),
                 ),
                 position: new CANNON.Vec3(posX, posY, posZ),
-                material: this.chassisCANNONMaterial,
+                material: chassisCANNONMaterial,
             }),
         );
         this.chassis.mesh.castShadow = true;
@@ -128,7 +124,7 @@ export class Car {
                 ),
                 new CANNON.Body({
                     mass: 0,
-                    material: this.wheelCANNONMaterial,
+                    material: wheelCANNONMaterial,
                     type: CANNON.Body.KINEMATIC,
                     collisionFilterGroup: 0, // turn off collisions
                 }),

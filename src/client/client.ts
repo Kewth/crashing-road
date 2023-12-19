@@ -3,7 +3,7 @@ import * as CANNON from "cannon-es";
 import CannonDebugger from "cannon-es-debugger";
 import { bound } from "./bound";
 import { jumpGenerator } from "./jump";
-import { Car } from "./car";
+import { Car, chassisCANNONMaterial, wheelCANNONMaterial } from "./car";
 import { dummyAI } from "./dummyAI";
 import { aggressiveAI } from "./aggressiveAI";
 
@@ -36,27 +36,23 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
 bound.addin(scene, world);
-const car = new Car(0, 0, 2);
-car.addin(scene, world);
 
-const playerCar = new Car(0, 20, 2)
-playerCar.addin(scene, world)
+const aggressiveCar = new Car(0, -20, 2);
+aggressiveCar.addin(scene, world);
+const playerCar = new Car(0, 0, 2);
+playerCar.addin(scene, world);
 
-// const npcCar = new Car(0, 50, 2)
-// npcCar.addin(scene, world)
-
-let npcCars: Car[] = []
-
+let npcCars: Car[] = [];
 for (let i = 1; i <= 20; i++) {
     // Code to be executed in each iteration
-    let curCar = new Car(0, 30 + 20 * i, 2)
+    let curCar = new Car(0, 10 + 20 * i, 2)
     curCar.addin(scene, world)
     npcCars.push(curCar)
 }
 
 
 const wheel_ground = new CANNON.ContactMaterial(
-    car.wheelCANNONMaterial,
+    wheelCANNONMaterial,
     bound.groundCANNONmaterial,
     {
         friction: 0.3,
@@ -65,7 +61,7 @@ const wheel_ground = new CANNON.ContactMaterial(
     },
 );
 const chassis_ground = new CANNON.ContactMaterial(
-    car.chassisCANNONMaterial,
+    chassisCANNONMaterial,
     bound.groundCANNONmaterial,
     {
         friction: 0.3,
@@ -93,11 +89,9 @@ function animate() {
     requestAnimationFrame(animate);
     delta = Math.min(clock.getDelta(), 0.1);
     world.step(delta);
-    car.update();
+    aggressiveCar.update();
     playerCar.update();
-    for(let i=0; i<20; i++) {
-        npcCars[i].update()
-    }
+    npcCars.forEach(car => car.update());
     const dis = playerCar.chassis.mesh.position.y;
     bound.update(dis);
     jumpGenerator.generate(dis).forEach((j) => {
@@ -121,10 +115,8 @@ function animate() {
     );
     // scene.add( new THREE.DirectionalLightHelper(light) )
     // cannonDebugger.update()
-    aggressiveAI(car, playerCar);
-    for(let i=0; i<20; i++) {
-        dummyAI(npcCars[i])
-    }
+    aggressiveAI(aggressiveCar, playerCar);
+    npcCars.forEach(car => dummyAI(car))
     render();
 }
 
