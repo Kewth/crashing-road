@@ -72,7 +72,7 @@ window.addEventListener("resize", () => {
     render();
 }, false);
 
-initKeyBinding(playerCar);
+initKeyBinding(playerCar, camera);
 
 const clock = new THREE.Clock();
 let delta;
