@@ -13,7 +13,7 @@ export class TrailCamera {
             0.1,
             1000,
         )
-        this.camera.rotateX(Math.PI * 0.3);
+        this.camera.rotateX(Math.PI * 0.27);
         this.focusMesh = focusMesh
         this.relativeDistance = 0
         this.move = 0

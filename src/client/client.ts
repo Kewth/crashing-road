@@ -87,6 +87,8 @@ const updObjs: UpdateObject[] = [
     camera,
 ]
 
+scene.add(new THREE.CameraHelper(light.light.shadow.camera))
+
 function animate() {
     requestAnimationFrame(animate);
     delta = Math.min(clock.getDelta(), 0.1);
@@ -97,7 +99,7 @@ function animate() {
         j.update();
         j.addin(scene, world);
     });
-    // scene.add( new THREE.DirectionalLightHelper(light) )
+    // scene.add( new THREE.DirectionalLightHelper(light.light) )
     // cannonDebugger.update()
     aggressiveAI(aggressiveCar, playerCar);
     npcCars.forEach(car => dummyAI(car))
