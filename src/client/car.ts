@@ -51,7 +51,12 @@ export class Car {
     wheelIsBroken: boolean[];
     collisionLockUntil: number;
 
+    target_x: number;
+    target_v: number;
+
     constructor(posX: number, posY: number, posZ: number, scene: THREE.Scene, world: CANNON.World) {
+        this.target_x = 0;
+        this.target_v = 10;
         // chassis
         this.chassis = new PhysicalObject(
             new THREE.Mesh(chassisGeometry, chassisMaterial),

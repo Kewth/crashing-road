@@ -9,6 +9,7 @@ import { aggressiveAI } from "./aggressiveAI";
 import { initKeyBinding } from "./keyBinding";
 import { TrailCamera } from "./trailCamera";
 import { CustomLight } from "./customLight";
+import { PhysicalObject } from "./physicalObject";
 
 const scene = new THREE.Scene();
 const world = new CANNON.World();
@@ -29,6 +30,8 @@ document.body.appendChild(renderer.domElement);
 const aggressiveCar = new Car(0, -20, 2, scene, world);
 
 const playerCar = new Car(0, 0, 2, scene, world);
+
+let obs_list: PhysicalObject[] = []
 
 playerCar.addCollisionDetection();
 let npcCars: Car[] = [];
@@ -98,11 +101,12 @@ function animate() {
     jumpGenerator.generate(dis).forEach((j) => {
         j.update();
         j.addin(scene, world);
+        obs_list.push(j)
     });
     // scene.add( new THREE.DirectionalLightHelper(light.light) )
     // cannonDebugger.update()
     aggressiveAI(aggressiveCar, playerCar);
-    npcCars.forEach(car => dummyAI(car))
+    npcCars.forEach(car => dummyAI(car, obs_list))
     render();
 }
 

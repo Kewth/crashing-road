@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { Car } from "./car";
 import { PIDController } from "./utils";
 import { Vec3 } from "cannon-es";
+import { PhysicalObject } from "./physicalObject";
 
 function castToXY(v3: THREE.Vector3) {
     return new THREE.Vector2(v3.x, v3.y)
@@ -17,7 +18,7 @@ function getDirectionalOffset(vec: THREE.Vector2, target: THREE.Vector2) {
     return vec.x * target.y - vec.y * target.x
 }
 
-function aggressiveAI(car: Car, target: Car) {
+function aggressiveAI(car: Car, target: Car, obs_list: PhysicalObject[] = []) {
     const pos = castToXY(car.chassis.mesh.position)
     let targetpos = castToXY(target.chassis.mesh.position)
     const relDisp = targetpos.clone().sub(pos)
@@ -32,4 +33,4 @@ function aggressiveAI(car: Car, target: Car) {
     car.steer(xcon.update(getDirectionalOffset(v, relDisp), 0.1))
 }
 
-export { aggressiveAI };
+export { aggressiveAI, getDirectionalOffset, castToXY, castToVector3 };

@@ -4,7 +4,7 @@ import { PhysicalObject } from "./physicalObject";
 import { Setting } from "./setting";
 
 const generateLength = 200;
-const generateNum = 30;
+const generateNum = 6;
 
 const jumpRadius = 4;
 const jumpHeight = 0.6;
