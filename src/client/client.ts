@@ -7,11 +7,12 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader'
 import { Boundary, groundCANNONmaterial } from "./boundary";
 import { jumpGenerator } from "./jump";
 import { Car, chassisCANNONMaterial, wheelCANNONMaterial } from "./car";
-import { dummyAI } from "./dummyAI";
-import { aggressiveAI } from "./aggressiveAI";
+import { DummyAI } from "./dummyAI";
+import { AggressiveAI } from "./aggressiveAI";
 import { initKeyBinding } from "./keyBinding";
 import { TrailCamera } from "./trailCamera";
 import { CustomLight } from "./customLight";
+import { PhysicalObject } from "./physicalObject";
 
 const scene = new THREE.Scene();
 const world = new CANNON.World();
@@ -29,16 +30,17 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
-const aggressiveCar = new Car(0, -20, 2, scene, world);
-
 const playerCar = new Car(0, 0, 2, scene, world);
-
 playerCar.addCollisionDetection();
-let npcCars: Car[] = [];
+
+const aggressiveAI = new AggressiveAI(0, -20, 2, scene, world, playerCar);
+
+let obs_list: PhysicalObject[] = [];
+
+let dummyAIs: DummyAI[] = [];
 for (let i = 1; i <= 20; i++) {
     // Code to be executed in each iteration
-    let curCar = new Car(0, 10 + 20 * i, 2, scene, world);
-    npcCars.push(curCar);
+    dummyAIs.push(new DummyAI(0, 10 + 20 * i, 2, scene, world, obs_list));
 }
 
 const boundary = new Boundary(playerCar.obj3d, scene, world)
@@ -109,9 +111,9 @@ let delta;
 
 type UpdateObject = { update(): void }
 const updObjs: UpdateObject[] = [
-    aggressiveCar,
     playerCar,
-    ...npcCars,
+    aggressiveAI,
+    ...dummyAIs,
     boundary,
     light,
     camera,
@@ -129,12 +131,11 @@ function animate() {
     jumpGenerator.generate(dis).forEach((j) => {
         j.update();
         j.addin(scene, world);
+        obs_list.push(j)
     });
     // scene.add( new THREE.DirectionalLightHelper(light.light) )
     // cannonDebugger.update()
     // if (boxHelper) boxHelper.update();
-    aggressiveAI(aggressiveCar, playerCar);
-    npcCars.forEach(car => dummyAI(car))
     render();
     stats.update();
 }
