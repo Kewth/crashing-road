@@ -16,7 +16,7 @@ export class DashBoard {
                     startAngle: 210,
                     endAngle: -30,
                     min: 0,
-                    max: 80,
+                    max: 160,
                     splitNumber: 8,
                     itemStyle: {
                         color: '#58D9F9',
@@ -68,23 +68,23 @@ export class DashBoard {
                         backgroundColor: '#fff',
                         borderColor: '#999',
                         borderWidth: 2,
-                        width: '60%',
+                        width: '55%',
                         lineHeight: 40,
                         height: 40,
                         borderRadius: 8,
-                        offsetCenter: [0, '35%'],
+                        offsetCenter: [-10, '35%'],
                         valueAnimation: true,
                         formatter: function (value: number) {
-                            return '{value|' + value.toFixed(0) + '}{unit|m/s}';
+                            return '{value|' + value.toFixed(0) + '}{unit|km/h}';
                         },
                         rich: {
                             value: {
-                                fontSize: 50,
+                                fontSize: 32,
                                 fontWeight: 'bolder',
                                 color: '#777'
                             },
                             unit: {
-                                fontSize: 20,
+                                fontSize: 18,
                                 color: '#999',
                                 padding: [0, 0, -20, 10]
                             }

@@ -35,6 +35,11 @@ export class PhysicalObject {
         scene.add(this.obj);
         world.addBody(this.body);
     }
+
+    remove(scene: THREE.Scene, world: CANNON.World) {
+        scene.remove(this.obj)
+        world.removeBody(this.body)
+    }
     
     static update(obj: THREE.Object3D, body: CANNON.Body) {
         obj.position.set(

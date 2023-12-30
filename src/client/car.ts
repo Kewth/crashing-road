@@ -52,9 +52,13 @@ export class Car {
     wheelIsBroken: boolean[];
     collisionLockUntil: number;
     usingModel: boolean;
+    scene: THREE.Scene;
+    world: CANNON.World;
 
     constructor(posX: number, posY: number, posZ: number, scene: THREE.Scene, world: CANNON.World) {
         this.obj3d = new THREE.Group();
+        this.scene = scene;
+        this.world = world;
         // chassis
         const chassisMesh = new THREE.Mesh(chassisGeometry, chassisMaterial)
         const chassisBody = new CANNON.Body({
@@ -167,6 +171,28 @@ export class Car {
         this.collisionLockUntil = Date.now();
     }
 
+
+    destroy() {
+        // Remove the car's 3D object from the scene
+        this.scene.remove(this.obj3d);
+
+        // Remove the car's wheel bodies from the world
+        for (const wheelBody of this.wheelBodys) {
+            this.world.removeBody(wheelBody);
+        }
+
+        // Dispose materials used by the car
+        chassisMaterial.dispose();
+        wheelMaterial.dispose();
+        brokenWheelMaterial.dispose();
+
+        // Dispose geometries used by the car
+        chassisGeometry.dispose();
+
+        this.vehicle.removeFromWorld(this.world)
+    }
+
+
     brake(r: number) {
         this.vehicle.setBrake(r * brakeForce, 0);
         this.vehicle.setBrake(r * brakeForce, 1);
@@ -189,8 +215,8 @@ export class Car {
      */
     drive(r: number) {
         r = Math.max(-1, Math.min(r, 1))
-        this.applyEngineForce(r, 2)
-        this.applyEngineForce(r, 3)
+        this.applyEngineForce(Math.min(r*(10/this.velocity().length()), 2), 2)
+        this.applyEngineForce(Math.min(r*(10/this.velocity().length()), 2), 3)
     }
 
     /**
