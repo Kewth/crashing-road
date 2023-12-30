@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import * as CANNON from "cannon-es";
 import Stats from 'three/examples/jsm/libs/stats.module'
-import CannonDebugger from "cannon-es-debugger";
+// import CannonDebugger from "cannon-es-debugger";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader'
@@ -20,7 +20,7 @@ import { NarrowWall } from "./narrowWall";
 
 const scene = new THREE.Scene();
 const world = new CANNON.World();
-const cannonDebugger = CannonDebugger(scene, world)
+// const cannonDebugger = CannonDebugger(scene, world)
 world.gravity.set(0, 0, -9.8);
 world.step(0.1);
 world.defaultContactMaterial.friction = 0;
@@ -144,7 +144,6 @@ const updObjs: UpdateObject[] = [
 
 const stats = new Stats()
 document.body.appendChild(stats.dom)
-renderer.setClearColor(0xd3df56, 1); //设置背景颜色
 
 function animate() {
     requestAnimationFrame(animate);
@@ -158,8 +157,7 @@ function animate() {
         obs_list.push(j)
     });
     // scene.add( new THREE.DirectionalLightHelper(light.light) )
-    cannonDebugger.update()
-    // if (boxHelper) boxHelper.update();
+    // cannonDebugger.update()
     render();
     stats.update();
 }

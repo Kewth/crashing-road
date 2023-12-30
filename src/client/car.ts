@@ -248,6 +248,7 @@ export class Car {
 
     // use a model to replace simple mesh
     useModel(model: THREE.Object3D) {
+        model = model.clone();
         if (this.usingModel) return;
         model.position.z -= chassisSizeZ / 2;
         this.obj3d.remove(this.obj3d.children[0]);
@@ -258,10 +259,12 @@ export class Car {
                 w.scale.set(1.2, 1.2, 1.2)
                 this.obj3d.remove(this.wheel3ds[i]);
                 this.wheel3ds[i] = w;
-                console.log(w);
             }
         }
         this.obj3d.add(model);
+        model.traverse(node => {
+            if (node instanceof THREE.Mesh) { node.castShadow = true; }
+        });
         this.usingModel = true;
     }
 

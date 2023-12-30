@@ -37,7 +37,6 @@ export class Boundary {
     leftWall: PhysicalObject
     rightWall: PhysicalObject
     focusObj: THREE.Object3D
-    fenceModel: THREE.Object3D | undefined
     fenceLength: number | undefined
 
     constructor(focusObj: THREE.Object3D, scene: THREE.Scene, world: CANNON.World) {
@@ -85,7 +84,7 @@ export class Boundary {
     }
 
     useFenceModel(model: THREE.Object3D) {
-        if (this.fenceModel) return;
+        if (this.fenceLength !== undefined) return;
         const box = new THREE.Box3().setFromObject(model);
         console.log(box);
         const length = box.max.y - box.min.y;
@@ -93,6 +92,7 @@ export class Boundary {
             const scene = wall.obj.parent;
             scene?.remove(wall.obj);
             wall.obj = new THREE.Group();
+            wall.obj.receiveShadow = true;
             for (let y = -100; y < 400; y += length) {
                 const fence = model.clone();
                 if (wall === this.leftWall)
@@ -105,14 +105,13 @@ export class Boundary {
             scene?.add(wall.obj);
             wall.update();
         })
-        this.fenceModel = model;
         this.fenceLength = length;
     }
 
     update() {
         const fy = this.focusObj.position.y
         this.ground.obj.position.y = fy;
-        if (this.fenceModel && this.fenceLength) {
+        if (this.fenceLength) {
             const y = this.leftWall.obj.position.y
             const ny = Math.floor((fy - y) / this.fenceLength) * this.fenceLength + y;
             this.leftWall.obj.position.y = ny;

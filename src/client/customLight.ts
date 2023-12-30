@@ -25,7 +25,7 @@ export class CustomLight {
         this.light.position.set(
             this.focusObj.position.x + 20 * ShadowRange,
             this.focusObj.position.y + 40 * ShadowRange,
-            this.focusObj.position.z + 20 * ShadowRange,
+            this.focusObj.position.z + 40 * ShadowRange,
         );
         this.light.target.position.copy(this.focusObj.position);
     }
