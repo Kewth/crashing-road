@@ -4,9 +4,9 @@ const ShadowRange = 16
 
 export class CustomLight {
     light: THREE.DirectionalLight
-    focusMesh: THREE.Mesh
+    focusObj: THREE.Object3D
     
-    constructor(scene: THREE.Scene, focusMesh: THREE.Mesh) {
+    constructor(focusObj: THREE.Object3D, scene: THREE.Scene) {
         this.light = new THREE.DirectionalLight();
         this.light.castShadow = true;
         this.light.shadow.camera.left = -5 * ShadowRange;
@@ -18,15 +18,15 @@ export class CustomLight {
         this.light.shadow.mapSize.width = 512 * ShadowRange;
         scene.add(this.light)
         scene.add(this.light.target)
-        this.focusMesh = focusMesh
+        this.focusObj = focusObj
     }
     
     update() {
         this.light.position.set(
-            this.focusMesh.position.x + 20 * ShadowRange,
-            this.focusMesh.position.y + 40 * ShadowRange,
-            this.focusMesh.position.z + 20 * ShadowRange,
+            this.focusObj.position.x + 20 * ShadowRange,
+            this.focusObj.position.y + 40 * ShadowRange,
+            this.focusObj.position.z + 20 * ShadowRange,
         );
-        this.light.target.position.copy(this.focusMesh.position);
+        this.light.target.position.copy(this.focusObj.position);
     }
 }

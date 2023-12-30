@@ -2,11 +2,11 @@ import * as THREE from "three";
 
 export class TrailCamera {
     camera: THREE.PerspectiveCamera
-    focusMesh: THREE.Mesh
+    focusObj: THREE.Object3D
     relativeDistance: number
     move: number
 
-    constructor(focusMesh: THREE.Mesh) {
+    constructor(focusObj: THREE.Object3D) {
         this.camera = new THREE.PerspectiveCamera(
             75,
             window.innerWidth / window.innerHeight,
@@ -14,7 +14,7 @@ export class TrailCamera {
             1000,
         )
         this.camera.rotateX(Math.PI * 0.27);
-        this.focusMesh = focusMesh
+        this.focusObj = focusObj
         this.relativeDistance = 0
         this.move = 0
     }
@@ -22,9 +22,9 @@ export class TrailCamera {
     update() {
         this.relativeDistance += this.move
         this.camera.position.set(
-            this.focusMesh.position.x,
-            this.focusMesh.position.y - 10 - 20 * this.relativeDistance,
-            this.focusMesh.position.z + 10 + 10 * this.relativeDistance,
+            this.focusObj.position.x,
+            this.focusObj.position.y - 10 - 20 * this.relativeDistance,
+            this.focusObj.position.z + 10 + 10 * this.relativeDistance,
         );
     }
 }

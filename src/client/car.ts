@@ -2,11 +2,11 @@ import * as THREE from "three";
 import * as CANNON from "cannon-es";
 import { PhysicalObject } from "./physicalObject";
 
-const chassisSizeX = 1.5;
-const chassisSizeY = 3;
+const chassisSizeX = 2.0;
+const chassisSizeY = 4.3;
 const chassisSizeZ = 0.8;
-const wheelOffsetX = 0.8;
-const wheelOffsetY = 0.8;
+const wheelOffsetX = 1.0;
+const wheelOffsetY = 1.6;
 const wheelOffsetZ = 0;
 const wheelRadius = 0.4;
 const carMass = 500;
@@ -45,33 +45,35 @@ const wheelOptions = {
 };
 
 export class Car {
-    chassis: PhysicalObject;
+    obj3d: THREE.Object3D;
     vehicle: CANNON.RaycastVehicle;
-    wheels: PhysicalObject[];
+    wheel3ds: THREE.Object3D[];
+    wheelBodys: CANNON.Body[];
     wheelIsBroken: boolean[];
     collisionLockUntil: number;
+    usingModel: boolean;
 
     constructor(posX: number, posY: number, posZ: number, scene: THREE.Scene, world: CANNON.World) {
+        this.obj3d = new THREE.Group();
         // chassis
-        this.chassis = new PhysicalObject(
-            new THREE.Mesh(chassisGeometry, chassisMaterial),
-            new CANNON.Body({
-                mass: carMass,
-                shape: new CANNON.Box(
-                    new CANNON.Vec3(
-                        chassisSizeX / 2,
-                        chassisSizeY / 2,
-                        chassisSizeZ / 2,
-                    ),
+        const chassisMesh = new THREE.Mesh(chassisGeometry, chassisMaterial)
+        const chassisBody = new CANNON.Body({
+            mass: carMass,
+            shape: new CANNON.Box(
+                new CANNON.Vec3(
+                    chassisSizeX / 2,
+                    chassisSizeY / 2,
+                    chassisSizeZ / 2,
                 ),
-                position: new CANNON.Vec3(posX, posY, posZ),
-                material: chassisCANNONMaterial,
-            }),
-        );
-        this.chassis.mesh.castShadow = true;
+            ),
+            position: new CANNON.Vec3(posX, posY, posZ),
+            material: chassisCANNONMaterial,
+        })
+        chassisMesh.castShadow = true;
+        this.obj3d.add(chassisMesh)
         // logical vehicle
         this.vehicle = new CANNON.RaycastVehicle({
-            chassisBody: this.chassis.body,
+            chassisBody: chassisBody,
             indexRightAxis: 0,
             indexForwardAxis: 1,
             indexUpAxis: 2,
@@ -101,56 +103,68 @@ export class Car {
         );
         this.vehicle.addWheel(wheelOptions);
         // wheels
-        this.wheels = [];
+        this.wheel3ds = [];
+        this.wheelBodys = [];
         this.wheelIsBroken = [];
         const wheelQuaternion = new CANNON.Quaternion();
         wheelQuaternion.setFromAxisAngle(new CANNON.Vec3(0, 0, 1), Math.PI / 2);
         this.vehicle.wheelInfos.forEach((wheel) => {
+            // wheel mesh
+            const wheelMesh = new THREE.Mesh(
+                new THREE.CylinderGeometry(
+                    wheel.radius,
+                    wheel.radius,
+                    wheel.radius * 0.5,
+                    20,
+                ),
+                wheelMaterial
+            )
+            const q = wheelQuaternion;
+            wheelMesh.geometry.applyQuaternion(
+                new THREE.Quaternion(q.x, q.y, q.z, q.w),
+            );
+            wheelMesh.position.set(
+                wheel.chassisConnectionPointLocal.x,
+                wheel.chassisConnectionPointLocal.y,
+                wheel.chassisConnectionPointLocal.z - chassisSizeZ / 2,
+            );
+            this.obj3d.add(wheelMesh);
+            this.wheel3ds.push(wheelMesh);
+            // wheel body
             const cylinderShape = new CANNON.Cylinder(
                 wheel.radius,
                 wheel.radius,
                 wheel.radius * 0.5,
                 20,
             );
-            const wheelObj = new PhysicalObject(
-                new THREE.Mesh(
-                    new THREE.CylinderGeometry(
-                        wheel.radius,
-                        wheel.radius,
-                        wheel.radius * 0.5,
-                        20,
-                    ),
-                    wheelMaterial
-                ),
-                new CANNON.Body({
-                    mass: 0,
-                    material: wheelCANNONMaterial,
-                    type: CANNON.Body.KINEMATIC,
-                    collisionFilterGroup: 0, // turn off collisions
-                }),
-            );
-            const q = wheelQuaternion;
-            wheelObj.body.addShape(cylinderShape, new CANNON.Vec3(), q);
-            wheelObj.mesh.geometry.applyQuaternion(
-                new THREE.Quaternion(q.x, q.y, q.z, q.w),
-            );
-            this.wheels.push(wheelObj);
+            const wheelBody = new CANNON.Body({
+                mass: 0,
+                material: wheelCANNONMaterial,
+                type: CANNON.Body.KINEMATIC,
+                collisionFilterGroup: 0, // turn off collisions
+            })
+            wheelBody.addShape(cylinderShape, new CANNON.Vec3(), q);
+            world.addBody(wheelBody);
+            this.wheelBodys.push(wheelBody);
+            // other property
             this.wheelIsBroken.push(false);
         });
-        this.collisionLockUntil = Date.now();
         // add into scene & world
-        scene.add(this.chassis.mesh);
+        scene.add(this.obj3d);
         this.vehicle.addToWorld(world);
-        this.wheels.forEach((w) => w.addin(scene, world));
+        // postStep
         world.addEventListener("postStep", () => {
             for (let i = 0; i < this.vehicle.wheelInfos.length; i++) {
                 this.vehicle.updateWheelTransform(i);
                 const transform = this.vehicle.wheelInfos[i].worldTransform;
-                const wheelObj = this.wheels[i];
-                wheelObj.body.position.copy(transform.position);
-                wheelObj.body.quaternion.copy(transform.quaternion);
+                const body = this.wheelBodys[i];
+                body.position.copy(transform.position);
+                body.quaternion.copy(transform.quaternion);
             }
         });
+        // other property
+        this.usingModel = false;
+        this.collisionLockUntil = Date.now();
     }
 
     brake(r: number) {
@@ -191,19 +205,29 @@ export class Car {
 
     // update information to render
     update() {
-        this.chassis.update(), this.wheels.forEach((w) => w.update());
+        PhysicalObject.update(this.obj3d, this.vehicle.chassisBody)
+        for (let i = 0; i < this.vehicle.wheelInfos.length; i++) {
+            this.wheel3ds[i].rotation.set(0, 0, 0);
+            if (this.usingModel) {
+                this.wheel3ds[i].rotateY(this.vehicle.wheelInfos[i].steering);
+                this.wheel3ds[i].rotateX(-this.vehicle.wheelInfos[i].rotation);
+            }
+            else {
+                this.wheel3ds[i].rotateZ(this.vehicle.wheelInfos[i].steering);
+            }
+        }
     }
 
     // call this after initialization if this car is controlled by player
     addCollisionDetection() {
         // Listen for collisions
-        this.chassis.body.addEventListener("collide", (e: any) => {
+        this.vehicle.chassisBody.addEventListener("collide", (e: any) => {
             const t = Date.now();
             if (e.contact && t >= this.collisionLockUntil) {
                 // Get the relative velocity of the collision
                 const velocity = e.contact.getImpactVelocityAlongNormal();
                 // Calculate the damage. This is a simple example, you might want to use a more complex formula.
-                const damage = Math.abs(velocity) * this.chassis.body.mass;
+                const damage = Math.abs(velocity) * carMass
                 // If the chassis's health is 0 or less, remove it from the game.
                 if (damage > 3000) {
                     const index = Math.floor(Math.random() * 4);
@@ -211,12 +235,43 @@ export class Car {
                         this.setSteeringValue(0, index);
                         this.applyEngineForce(0, index);
                         this.wheelIsBroken[index] = true;
-                        this.wheels[index].mesh.material = brokenWheelMaterial
+                        const w3d = this.wheel3ds[index]
+                        if (w3d instanceof THREE.Mesh)
+                            w3d.material = brokenWheelMaterial
                         console.log(t, this.collisionLockUntil)
                         this.collisionLockUntil = t + 2000;
                     }
                 }
             }
         });
+    }
+
+    // use a model to replace simple mesh
+    useModel(model: THREE.Object3D) {
+        if (this.usingModel) return;
+        model.position.z -= chassisSizeZ / 2;
+        this.obj3d.remove(this.obj3d.children[0]);
+        const wheelNames = ['wheel_fr', 'wheel_fl', 'wheel_rr', 'wheel_rl'];
+        for (let i = 0; i < 4; i ++) {
+            const w = model.getObjectByName(wheelNames[i]);
+            if (w) {
+                w.scale.set(1.2, 1.2, 1.2)
+                this.obj3d.remove(this.wheel3ds[i]);
+                this.wheel3ds[i] = w;
+                console.log(w);
+            }
+        }
+        this.obj3d.add(model);
+        this.usingModel = true;
+    }
+
+    // get 3d position
+    pos() {
+        return this.obj3d.position
+    }
+    
+    // get physical velocity
+    velocity() {
+        return this.vehicle.chassisBody.velocity
     }
 }
