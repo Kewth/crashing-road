@@ -36,9 +36,9 @@ export class Boundary {
     ground: PhysicalObject
     leftWall: PhysicalObject
     rightWall: PhysicalObject
-    focusMesh: THREE.Mesh
+    focusObj: THREE.Object3D
     
-    constructor(focusMesh: THREE.Mesh, scene: THREE.Scene, world: CANNON.World) {
+    constructor(focusObj: THREE.Object3D, scene: THREE.Scene, world: CANNON.World) {
         this.ground = new PhysicalObject(
             new THREE.Mesh(groundGeometry, groundMaterial),
             new CANNON.Body({
@@ -47,7 +47,7 @@ export class Boundary {
                 material: groundCANNONmaterial,
             }),
         );
-        this.ground.mesh.receiveShadow = true;
+        this.ground.obj.receiveShadow = true;
 
         this.leftWall = new PhysicalObject(
             new THREE.Mesh(wallGeometry, wallMaterial),
@@ -58,7 +58,7 @@ export class Boundary {
             }),
         );
         this.leftWall.body.quaternion.setFromEuler(0, Math.PI / 2, 0);
-        this.leftWall.mesh.receiveShadow = true;
+        this.leftWall.obj.receiveShadow = true;
         this.leftWall.body.position.set(-Setting.groundWidth / 2, 0, 0);
 
         this.rightWall = new PhysicalObject(
@@ -70,7 +70,7 @@ export class Boundary {
             }),
         );
         this.rightWall.body.quaternion.setFromEuler(0, -Math.PI / 2, 0);
-        this.rightWall.mesh.receiveShadow = true;
+        this.rightWall.obj.receiveShadow = true;
         this.rightWall.body.position.set(Setting.groundWidth / 2, 0, 0);
 
         this.ground.addin(scene, world);
@@ -79,13 +79,13 @@ export class Boundary {
         this.ground.update();
         this.leftWall.update();
         this.rightWall.update();
-        this.focusMesh = focusMesh
+        this.focusObj = focusObj
     }
 
     update() {
-        const dis = this.focusMesh.position.y
-        this.ground.mesh.position.set(0, dis, 0);
-        this.leftWall.mesh.position.set(-Setting.groundWidth / 2, dis, 0);
-        this.rightWall.mesh.position.set(Setting.groundWidth / 2, dis, 0);
+        const dis = this.focusObj.position.y
+        this.ground.obj.position.set(0, dis, 0);
+        this.leftWall.obj.position.set(-Setting.groundWidth / 2, dis, 0);
+        this.rightWall.obj.position.set(Setting.groundWidth / 2, dis, 0);
     }
 }

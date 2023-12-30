@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import * as CANNON from "cannon-es";
 import { Car } from "./car";
 import { PIDController } from "./utils";
 import { Vec3 } from "cannon-es";
@@ -18,19 +19,28 @@ function getDirectionalOffset(vec: THREE.Vector2, target: THREE.Vector2) {
     return vec.x * target.y - vec.y * target.x
 }
 
-function aggressiveAI(car: Car, target: Car, obs_list: PhysicalObject[] = []) {
-    const pos = castToXY(car.chassis.mesh.position)
-    let targetpos = castToXY(target.chassis.mesh.position)
-    const relDisp = targetpos.clone().sub(pos)
-    const v = castToXY(castToVector3(car.chassis.body.velocity))
-    const targetv = castToXY(castToVector3(target.chassis.body.velocity))
-    const maxv = 15
-    
-    let vcon = new PIDController(0.1, 0.05, 0.01)
-    let xcon = new PIDController(0.1, 0, 0.5)
-    car.drive(0.4 * vcon.update(maxv - car.chassis.body.velocity.length(), 0.1));
-    const posx = car.chassis.mesh.position.x;
-    car.steer(xcon.update(getDirectionalOffset(v, relDisp), 0.1))
-}
+export class AggressiveAI {
+    car: Car
+    targetCar: Car
 
-export { aggressiveAI, getDirectionalOffset, castToXY, castToVector3 };
+    constructor(posX: number, posY: number, posZ: number, scene: THREE.Scene, world: CANNON.World, targetCar: Car) {
+        this.car = new Car(posX, posY, posZ, scene, world);
+        this.targetCar = targetCar;
+    }
+    
+    update() {
+        this.car.update();
+        const pos = castToXY(this.car.pos())
+        let targetpos = castToXY(this.targetCar.pos())
+        const relDisp = targetpos.clone().sub(pos)
+        const v = castToXY(castToVector3(this.car.velocity()))
+        const targetv = castToXY(castToVector3(this.targetCar.velocity()))
+        const maxv = 15
+
+        let vcon = new PIDController(0.1, 0.05, 0.01)
+        let xcon = new PIDController(0.1, 0, 0.5)
+        this.car.drive(0.4 * vcon.update(maxv - this.car.velocity().length(), 0.1));
+        const posx = this.car.pos().x;
+        this.car.steer(xcon.update(getDirectionalOffset(v, relDisp), 0.1))
+    }
+}
