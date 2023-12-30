@@ -13,6 +13,7 @@ import { initKeyBinding } from "./keyBinding";
 import { TrailCamera } from "./trailCamera";
 import { CustomLight } from "./customLight";
 import { PhysicalObject } from "./physicalObject";
+import { NarrowWall } from "./narrowWall";
 
 const scene = new THREE.Scene();
 const world = new CANNON.World();
@@ -143,5 +144,7 @@ function animate() {
 function render() {
     renderer.render(scene, camera.camera);
 }
+
+const narrowWall = new NarrowWall(100, scene, world)
 
 animate();
