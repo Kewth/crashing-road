@@ -38,6 +38,7 @@ export class Boundary {
     rightWall: PhysicalObject
     focusObj: THREE.Object3D
     fenceLength: number | undefined
+    roadTextureLength: number | undefined
 
     constructor(focusObj: THREE.Object3D, scene: THREE.Scene, world: CANNON.World) {
         this.ground = new PhysicalObject(
@@ -108,9 +109,42 @@ export class Boundary {
         this.fenceLength = length;
     }
 
+    useRoadTexture(texture: THREE.Texture) {
+        texture = texture.clone();
+        texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+        const repeatY = 50;
+        texture.repeat.set(5, repeatY);
+        if (this.roadTextureLength !== undefined) return;
+        (this.ground.obj as THREE.Mesh).material = new THREE.MeshPhongMaterial({ map: texture });
+        this.roadTextureLength = 1000 / repeatY;
+    }
+    
+    // FIXME: 使用纹理代替模型 (done)
+    // useRoadModel(model: THREE.Object3D) {
+    //     const box = new THREE.Box3().setFromObject(model);
+    //     const modelWidth = box.max.x - box.min.x;
+    //     let xNum = Math.ceil(Setting.groundWidth / modelWidth);
+    //     const scene = this.ground.obj.parent;
+    //     scene?.remove(this.ground.obj);
+    //     this.ground.obj = new THREE.Group();
+    //     for (let i = 0; i < xNum; i ++) {
+    //         const mod = model.clone();
+    //         mod.scale.set(Setting.groundWidth / modelWidth / xNum, 1, 1);
+    //         mod.position.set(Setting.groundWidth * (0.5 / xNum - 0.5 + i / xNum), 0, 0)
+    //         this.ground.obj.add(mod);
+    //     }
+    //     scene?.add(this.ground.obj);
+    // }
+
     update() {
         const fy = this.focusObj.position.y
-        this.ground.obj.position.y = fy;
+        if (this.roadTextureLength) {
+            const y = this.ground.obj.position.y
+            const ny = Math.floor((fy - y) / this.roadTextureLength) * this.roadTextureLength + y;
+            this.ground.obj.position.y = ny;
+        }
+        else
+            this.ground.obj.position.y = fy;
         if (this.fenceLength) {
             const y = this.leftWall.obj.position.y
             const ny = Math.floor((fy - y) / this.fenceLength) * this.fenceLength + y;

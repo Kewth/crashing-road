@@ -3,7 +3,6 @@ import * as CANNON from "cannon-es";
 import Stats from 'three/examples/jsm/libs/stats.module'
 // import CannonDebugger from "cannon-es-debugger";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
-import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader'
 import { Boundary, groundCANNONmaterial } from "./boundary";
 import { jumpGenerator } from "./jump";
@@ -87,9 +86,9 @@ const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath('js/libs/draco/gltf/')
 const gltfLoader = new GLTFLoader();
 gltfLoader.setDRACOLoader(dracoLoader);
-let carModel: THREE.Object3D | undefined = undefined
 // let boxHelper: THREE.BoxHelper | undefined = undefined
 
+let carModel: THREE.Object3D | undefined = undefined
 gltfLoader.load(
     'models/ferrari.glb',
     gltf => {
@@ -109,7 +108,6 @@ gltfLoader.load(
 );
 
 let fenceModel: THREE.Object3D | undefined = undefined
-
 gltfLoader.load(
     'models/fence.glb',
     gltf => {
@@ -123,6 +121,30 @@ gltfLoader.load(
     undefined,
     err => { console.error(err) }
 )
+
+const textureLoader = new THREE.TextureLoader();
+
+textureLoader.load(
+    'images/road.jpg',
+    tex => {
+        boundary.useRoadTexture(tex);
+    },
+    undefined,
+    err => { console.error(err) }
+)
+
+// let roadModel: THREE.Object3D | undefined = undefined
+// gltfLoader.load(
+//     'models/road.glb',
+//     gltf => {
+//         roadModel = gltf.scene.children[0];
+//         roadModel.rotateX(Math.PI / 2);
+//         scene.add(roadModel);
+//         boundary.useRoadModel(roadModel);
+//     },
+//     undefined,
+//     err => { console.error(err) }
+// )
 
 const bottomInfo = new BottomInfo(playerCar.obj3d, aggressiveAI.car.obj3d);
 const dashboard = new DashBoard(() => playerCar.velocity().length());
