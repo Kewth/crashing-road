@@ -3,7 +3,7 @@ import * as CANNON from "cannon-es";
 import { PhysicalObject } from "./physicalObject";
 import { Setting } from "./setting";
 
-const wallHeight = 5;
+const wallHeight = 3;
 const groundMaterial = new THREE.MeshPhongMaterial();
 const wallMaterial = new THREE.MeshPhongMaterial({ color: 0xccccc });
 const groundGeometry = new THREE.PlaneGeometry(Setting.groundWidth, 1000);
@@ -37,7 +37,9 @@ export class Boundary {
     leftWall: PhysicalObject
     rightWall: PhysicalObject
     focusObj: THREE.Object3D
-    
+    fenceModel: THREE.Object3D | undefined
+    fenceLength: number | undefined
+
     constructor(focusObj: THREE.Object3D, scene: THREE.Scene, world: CANNON.World) {
         this.ground = new PhysicalObject(
             new THREE.Mesh(groundGeometry, groundMaterial),
@@ -82,10 +84,43 @@ export class Boundary {
         this.focusObj = focusObj
     }
 
+    useFenceModel(model: THREE.Object3D) {
+        if (this.fenceModel) return;
+        const box = new THREE.Box3().setFromObject(model);
+        console.log(box);
+        const length = box.max.y - box.min.y;
+        [this.leftWall, this.rightWall].forEach(wall => {
+            const scene = wall.obj.parent;
+            scene?.remove(wall.obj);
+            wall.obj = new THREE.Group();
+            for (let y = -100; y < 400; y += length) {
+                const fence = model.clone();
+                if (wall === this.leftWall)
+                    fence.rotateY(-Math.PI / 2);
+                if (wall === this.rightWall)
+                    fence.rotateY(Math.PI / 2);
+                fence.position.set(0, y, 0);
+                wall.obj.add(fence);
+            }
+            scene?.add(wall.obj);
+            wall.update();
+        })
+        this.fenceModel = model;
+        this.fenceLength = length;
+    }
+
     update() {
-        const dis = this.focusObj.position.y
-        this.ground.obj.position.set(0, dis, 0);
-        this.leftWall.obj.position.set(-Setting.groundWidth / 2, dis, 0);
-        this.rightWall.obj.position.set(Setting.groundWidth / 2, dis, 0);
+        const fy = this.focusObj.position.y
+        this.ground.obj.position.y = fy;
+        if (this.fenceModel && this.fenceLength) {
+            const y = this.leftWall.obj.position.y
+            const ny = Math.floor((fy - y) / this.fenceLength) * this.fenceLength + y;
+            this.leftWall.obj.position.y = ny;
+            this.rightWall.obj.position.y = ny;
+        }
+        else {
+            this.leftWall.obj.position.y = fy;
+            this.rightWall.obj.position.y = fy;
+        }
     }
 }

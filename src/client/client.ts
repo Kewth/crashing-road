@@ -1,8 +1,9 @@
 import * as THREE from "three";
 import * as CANNON from "cannon-es";
 import Stats from 'three/examples/jsm/libs/stats.module'
-// import CannonDebugger from "cannon-es-debugger";
+import CannonDebugger from "cannon-es-debugger";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader'
 import { Boundary, groundCANNONmaterial } from "./boundary";
 import { jumpGenerator } from "./jump";
@@ -19,7 +20,7 @@ import { NarrowWall } from "./narrowWall";
 
 const scene = new THREE.Scene();
 const world = new CANNON.World();
-// const cannonDebugger = CannonDebugger(scene, world)
+const cannonDebugger = CannonDebugger(scene, world)
 world.gravity.set(0, 0, -9.8);
 world.step(0.1);
 world.defaultContactMaterial.friction = 0;
@@ -84,12 +85,12 @@ initKeyBinding(playerCar, camera);
 
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath('js/libs/draco/gltf/')
-const loader = new GLTFLoader();
-loader.setDRACOLoader(dracoLoader);
+const gltfLoader = new GLTFLoader();
+gltfLoader.setDRACOLoader(dracoLoader);
 let carModel: THREE.Object3D | undefined = undefined
 // let boxHelper: THREE.BoxHelper | undefined = undefined
 
-loader.load(
+gltfLoader.load(
     'models/ferrari.glb',
     gltf => {
         carModel = gltf.scene.children[0];
@@ -104,10 +105,24 @@ loader.load(
         // scene.add(boxHelper)
     },
     undefined,
-    error => {
-        console.error(error);
-    }
+    err => { console.error(err) }
 );
+
+let fenceModel: THREE.Object3D | undefined = undefined
+
+gltfLoader.load(
+    'models/fence.glb',
+    gltf => {
+        fenceModel = gltf.scene.children[0];
+        fenceModel.rotateX(Math.PI / 2);
+        fenceModel.rotateY(Math.PI);
+        // scene.add(fenceModel);
+        boundary.useFenceModel(fenceModel)
+        console.log(fenceModel);
+    },
+    undefined,
+    err => { console.error(err) }
+)
 
 const bottomInfo = new BottomInfo(playerCar.obj3d, aggressiveAI.car.obj3d);
 const dashboard = new DashBoard(() => playerCar.velocity().length());
@@ -129,6 +144,7 @@ const updObjs: UpdateObject[] = [
 
 const stats = new Stats()
 document.body.appendChild(stats.dom)
+renderer.setClearColor(0xd3df56, 1); //设置背景颜色
 
 function animate() {
     requestAnimationFrame(animate);
@@ -142,7 +158,7 @@ function animate() {
         obs_list.push(j)
     });
     // scene.add( new THREE.DirectionalLightHelper(light.light) )
-    // cannonDebugger.update()
+    cannonDebugger.update()
     // if (boxHelper) boxHelper.update();
     render();
     stats.update();
