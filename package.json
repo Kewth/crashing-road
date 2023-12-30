@@ -23,6 +23,7 @@
     "webpack-dev-server": "^4.15.1"
   },
   "dependencies": {
-    "cannon-es-debugger": "^1.0.0"
+    "cannon-es-debugger": "^1.0.0",
+    "echarts": "^5.4.3"
   }
 }

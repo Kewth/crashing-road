@@ -13,6 +13,8 @@ import { initKeyBinding } from "./keyBinding";
 import { TrailCamera } from "./trailCamera";
 import { CustomLight } from "./customLight";
 import { PhysicalObject } from "./physicalObject";
+import { DashBoard } from "./dashBoard";
+import { BottomInfo } from "./bottomInfo";
 
 const scene = new THREE.Scene();
 const world = new CANNON.World();
@@ -106,6 +108,9 @@ loader.load(
     }
 );
 
+const bottomInfo = new BottomInfo(playerCar.obj3d, aggressiveAI.car.obj3d);
+const dashboard = new DashBoard(() => playerCar.velocity().length());
+
 const clock = new THREE.Clock();
 let delta;
 
@@ -117,6 +122,8 @@ const updObjs: UpdateObject[] = [
     boundary,
     light,
     camera,
+    bottomInfo,
+    dashboard,
 ]
 
 const stats = new Stats()
@@ -127,7 +134,7 @@ function animate() {
     delta = Math.min(clock.getDelta(), 0.1);
     world.step(delta);
     updObjs.forEach(obj => obj.update());
-    const dis = playerCar.obj3d.position.y;
+    const dis = playerCar.pos().y
     jumpGenerator.generate(dis).forEach((j) => {
         j.update();
         j.addin(scene, world);
