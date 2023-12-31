@@ -11,6 +11,8 @@
   - up/down: zoom in/out
 
 changelog since 12/31:
+  updated 12/31 20:19
+    use a 3d model to render aggressive cars
   updated 12/31 20:04
     framework update: car config
     add dummyLaneAI, which try to keep a car in the middle of the closest lane in a simple way

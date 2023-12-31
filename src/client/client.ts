@@ -46,7 +46,7 @@ const jumpGenerator = new JumpGenerator(playerCar.obj3d, scene, world);
 
 const laneFenceGenerator = new LaneFenceGenerator(playerCar.obj3d, scene, world);
 
-const aggressiveAI = new AggressiveAI(0, -20, 2, scene, world, playerCar);
+const aggressiveAI = new AggressiveAI(new Car(0, -20, 2, 'police', scene, world), playerCar);
 
 // let dummyAIs: DummyAI[] = [];
 // for (let i = 1; i <= 20; i++) {
@@ -108,9 +108,7 @@ gltfLoader.load(
                 node.castShadow = true;
             }
         });
-        const q = new THREE.Quaternion();
-        q.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
-        model.applyQuaternion(q);
+        model.rotateX(Math.PI / 2);
         Car.addModel('ferrari', model);
         // scene.add(carModel)
         // boxHelper = new THREE.BoxHelper( carModel, 0xffff00 );
@@ -134,13 +132,36 @@ gltfLoader.load(
         model.quaternion.set(0, 0, 0, 1);
         const box = new THREE.Box3().setFromObject(model);
         model.position.x -= (box.max.x + box.min.x) / 2;
-        const q = new THREE.Quaternion();
-        q.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
         Car.addModel('truck', model);
     },
     undefined,
     err => { console.error(err) }
 );
+
+gltfLoader.load(
+    'models/police.glb',
+    gltf => {
+        const model = gltf.scene.children[0];
+        model.traverse(node => {
+            if (node instanceof THREE.Mesh) {
+                // node.receiveShadow = true;
+                node.castShadow = true;
+            }
+        });
+        model.position.set(0, 0, 0);
+        model.quaternion.set(0, 0, 0, 1);
+        model.rotateX(Math.PI);
+        model.rotateZ(Math.PI / 2);
+        // const box = new THREE.Box3().setFromObject(model);
+        // scene.add(model);
+        // console.log(model);
+        // console.log(box);
+        Car.addModel('police', model);
+    },
+    undefined,
+    err => { console.error(err) }
+);
+
 
 let fenceModel: THREE.Object3D | undefined = undefined
 gltfLoader.load(

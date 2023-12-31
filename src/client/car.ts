@@ -14,7 +14,7 @@ interface CarConfig {
     mass: number;
 }
 
-type ConfigName = "ferrari" | "truck"
+type ConfigName = "ferrari" | "truck" | "police"
 const configMap: {[key in ConfigName]: CarConfig} = {
     "ferrari" : {
         chassisSizeX: 2.0,
@@ -36,10 +36,21 @@ const configMap: {[key in ConfigName]: CarConfig} = {
         wheelRadius: 0.5,
         mass: 1000,
     },
+    "police" : {
+        chassisSizeX: 2.0,
+        chassisSizeY: 4.8,
+        chassisSizeZ: 0.8,
+        wheelOffsetX: 1.0,
+        wheelOffsetY: 1.7,
+        wheelOffsetZ: 0,
+        wheelRadius: 0.4,
+        mass: 500,
+    },
 }
 const modelMap: {[key in ConfigName]: THREE.Object3D | undefined} = {
     "ferrari" : undefined,
     "truck" : undefined,
+    "police" : undefined,
 }
 
 // const chassisSizeX = 2.0;

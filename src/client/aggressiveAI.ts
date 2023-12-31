@@ -24,8 +24,8 @@ export class AggressiveAI {
     car: Car
     targetCar: Car
 
-    constructor(posX: number, posY: number, posZ: number, scene: THREE.Scene, world: CANNON.World, targetCar: Car) {
-        this.car = new Car(posX, posY, posZ, 'ferrari', scene, world);
+    constructor(car: Car, targetCar: Car) {
+        this.car = car;
         this.targetCar = targetCar;
     }
     
