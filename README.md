@@ -11,6 +11,9 @@
   - up/down: zoom in/out
 
 changelog since 12/31:
+  updated 12/31 22:08
+    framework update: player class
+    add game over detection
   updated 12/31 X
     update bottom informtaion bar
     add a distance remainder embedded in the road

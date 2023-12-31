@@ -35,6 +35,7 @@ export class JumpGenerator {
                         shape: jumpShape,
                     }),
                 );
+                jump.obj.receiveShadow = true;
                 jump.body.quaternion.setFromEuler(Math.PI / 2, 0, 0);
                 this.addObsInRandomPos(jump);
                 jump.addin(scene, world);

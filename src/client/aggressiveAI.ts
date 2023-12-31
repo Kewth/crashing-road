@@ -33,6 +33,8 @@ export class AggressiveAI {
         this.car.update();
         if (this.car.pos.y < this.targetCar.pos.y - Setting.aggressiveDistance - 10) {
             this.car.worldPos.y = this.targetCar.pos.y - Setting.aggressiveDistance - 10;
+            const dir = this.car.direction()
+            if (dir.y < Math.abs(dir.x)) this.car.quaternion.set(0, 0, 0, 1);
             this.car.update();
         }
 

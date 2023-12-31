@@ -120,7 +120,8 @@ export class Car {
             ),
             position: new CANNON.Vec3(posX, posY, posZ),
             material: CANNONMaterial.chassis,
-        })
+        });
+        (chassisBody as any).configName = configName;
         chassisMesh.castShadow = true;
         this.obj3d.add(chassisMesh)
         // logical vehicle
@@ -300,33 +301,32 @@ export class Car {
     }
 
     // call this after initialization if this car is controlled by player
-    addCollisionDetection() {
-        return;
-        // Listen for collisions
-        this.vehicle.chassisBody.addEventListener("collide", (e: any) => {
-            const t = Date.now();
-            if (e.contact && t >= this.collisionLockUntil) {
-                // Get the relative velocity of the collision
-                const velocity = e.contact.getImpactVelocityAlongNormal();
-                // Calculate the damage. This is a simple example, you might want to use a more complex formula.
-                const damage = Math.abs(velocity) * this.vehicle.chassisBody.mass
-                // If the chassis's health is 0 or less, remove it from the game.
-                if (damage > 3000) {
-                    const index = Math.floor(Math.random() * 4);
-                    if (this.wheelIsBroken[index] === false) {
-                        this.setSteeringValue(0, index);
-                        this.applyEngineForce(0, index);
-                        this.wheelIsBroken[index] = true;
-                        const w3d = this.wheel3ds[index]
-                        if (w3d instanceof THREE.Mesh)
-                            w3d.material = brokenWheelMaterial
-                        console.log(t, this.collisionLockUntil)
-                        this.collisionLockUntil = t + 2000;
-                    }
-                }
-            }
-        });
-    }
+    // addCollisionDetection(gameoverFn: () => void) {
+    //     // Listen for collisions
+    //     this.vehicle.chassisBody.addEventListener("collide", (e: any) => {
+    //         const t = Date.now();
+    //         if (e.contact && t >= this.collisionLockUntil) {
+    //             // Get the relative velocity of the collision
+    //             const velocity = e.contact.getImpactVelocityAlongNormal();
+    //             // Calculate the damage. This is a simple example, you might want to use a more complex formula.
+    //             const damage = Math.abs(velocity) * this.vehicle.chassisBody.mass
+    //             // If the chassis's health is 0 or less, remove it from the game.
+    //             if (damage > 3000) {
+    //                 const index = Math.floor(Math.random() * 4);
+    //                 if (this.wheelIsBroken[index] === false) {
+    //                     this.setSteeringValue(0, index);
+    //                     this.applyEngineForce(0, index);
+    //                     this.wheelIsBroken[index] = true;
+    //                     const w3d = this.wheel3ds[index]
+    //                     if (w3d instanceof THREE.Mesh)
+    //                         w3d.material = brokenWheelMaterial
+    //                     console.log(t, this.collisionLockUntil)
+    //                     this.collisionLockUntil = t + 2000;
+    //                 }
+    //             }
+    //         }
+    //     });
+    // }
 
     // use a model to replace simple mesh
     private useModel(model: THREE.Object3D) {
@@ -368,6 +368,16 @@ export class Car {
     // get world position
     get worldQuaternion() {
         return this.vehicle.chassisBody.quaternion
+    }
+
+    // get chassis body
+    get chassisBody() {
+        return this.vehicle.chassisBody
+    }
+
+    // get normailized direction
+    direction() {
+        return new THREE.Vector3(0, 1, 0).applyQuaternion(this.obj3d.quaternion).normalize();
     }
 
     // add a model map, the corresponding cars will use this model automatically
