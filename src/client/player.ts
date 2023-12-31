@@ -28,6 +28,9 @@ export class Player {
                 case "s": car.drive(-1); break;
                 case "a": car.steer(1); break;
                 case "d": car.steer(-1); break;
+                case "l": // just for fun
+                    if (car.pos.z < 2) car.velocity.z = 10;
+                    break;
                 case " ": car.brake(1); break;
             }
         });

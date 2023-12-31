@@ -11,6 +11,8 @@
   - up/down: zoom in/out
 
 changelog since 12/31:
+  updated 12/31 22:47
+    add patrol police car
   updated 12/31 22:08
     framework update: player class
     add game over detection
