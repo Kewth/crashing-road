@@ -6,7 +6,7 @@ import { Car } from "./car";
 import { DummyLaneAI } from "./dummyLaneAI";
 
 const generateLength = 20;
-const generateProb = 1;
+const generateProb = 0.8;
 const numLimit = 20;
 
 const jumpRadius = 2;
@@ -50,10 +50,11 @@ export class TruckGenerator {
                     );
                     truck?.car.worldPos.set(posX, posY, posZ);
                     truck?.car.worldQuaternion.set(0, 0, 0, 1);
+                    truck?.car.velocity.set(0, 0, 0);
                 }
                 else {
                     const truck = new Car(posX, posY, posZ, 'truck', this.scene, this.world);
-                    this.truck_list.push(new DummyLaneAI(truck));
+                    this.truck_list.push(new DummyLaneAI(truck, 20));
                 }
             }
             this.nowDis += generateLength;

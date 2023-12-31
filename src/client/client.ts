@@ -21,6 +21,7 @@ import { Setting } from "./setting";
 import { CANNONMaterial } from "./cannonMaterial";
 import { LaneFenceGenerator } from "./laneFence";
 import { TruckGenerator } from "./truck";
+import { DistanceRemainder } from "./distanceRemainder";
 
 const scene = new THREE.Scene();
 const world = new CANNON.World();
@@ -55,6 +56,8 @@ const aggressiveAI = new AggressiveAI(new Car(0, -20, 2, 'police', scene, world)
 // }
 
 const truckGenerator = new TruckGenerator(playerCar.obj3d, scene, world);
+
+const distanceRemainder = new DistanceRemainder(playerCar.obj3d, scene);
 
 const boundary = new Boundary(playerCar.obj3d, scene, world)
 
@@ -228,6 +231,7 @@ const updObjs: UpdateObject[] = [
     bottomInfo,
     dashboard,
     cannonDebugger,
+    distanceRemainder,
 ]
 
 // let npcCars: (DummyAI|AggressiveAI)[] = [

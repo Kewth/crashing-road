@@ -263,8 +263,8 @@ export class Car {
      * @param r the relative drive. ranged between -1 (full reverse) and +1 (full drive)
      */
     drive(r: number) {
-        r = Math.max(-1, Math.min(r, 1))
-        r *= 10 / (this.velocity.length() + 10)
+        const lim = 10 / (this.velocity.length() + 10)
+        r = Math.max(-lim, Math.min(r, lim))
         this.applyEngineForce(r, 2);
         this.applyEngineForce(r, 3);
     }
