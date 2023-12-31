@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import * as CANNON from "cannon-es";
 import Stats from 'three/examples/jsm/libs/stats.module'
-import CannonDebugger from "cannon-es-debugger";
+// import CannonDebugger from "cannon-es-debugger";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader'
 import { Boundary } from "./boundary";
@@ -26,7 +26,7 @@ import { Player } from "./player";
 
 const scene = new THREE.Scene();
 const world = new CANNON.World();
-const cannonDebugger = CannonDebugger(scene, world)
+// const cannonDebugger = CannonDebugger(scene, world)
 world.gravity.set(0, 0, -9.8);
 world.step(0.1);
 world.defaultContactMaterial.friction = 0;
@@ -240,7 +240,7 @@ const updObjs: UpdateObject[] = [
     camera,
     bottomInfo,
     dashboard,
-    cannonDebugger,
+    // cannonDebugger,
     distanceRemainder,
 ]
 
