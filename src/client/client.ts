@@ -1,11 +1,11 @@
 import * as THREE from "three";
 import * as CANNON from "cannon-es";
 import Stats from 'three/examples/jsm/libs/stats.module'
-// import CannonDebugger from "cannon-es-debugger";
+import CannonDebugger from "cannon-es-debugger";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader'
 import { Boundary, groundCANNONmaterial } from "./boundary";
-import { jumpGenerator } from "./jump";
+import { JumpGenerator } from "./jump";
 import { Car, chassisCANNONMaterial, wheelCANNONMaterial } from "./car";
 import { DummyAI } from "./dummyAI";
 import { AggressiveAI } from "./aggressiveAI";
@@ -21,7 +21,7 @@ import { Setting } from "./setting";
 
 const scene = new THREE.Scene();
 const world = new CANNON.World();
-// const cannonDebugger = CannonDebugger(scene, world)
+const cannonDebugger = CannonDebugger(scene, world)
 world.gravity.set(0, 0, -9.8);
 world.step(0.1);
 world.defaultContactMaterial.friction = 0;
@@ -38,14 +38,14 @@ document.body.appendChild(renderer.domElement);
 const playerCar = new Car(0, 0, 2, scene, world);
 playerCar.addCollisionDetection();
 
-const aggressiveAI = new AggressiveAI(0, -20, 2, scene, world, playerCar);
+const jumpGenerator = new JumpGenerator(playerCar.obj3d, scene, world);
 
-let obs_list: PhysicalObject[] = [];
+const aggressiveAI = new AggressiveAI(0, -20, 2, scene, world, playerCar);
 
 let dummyAIs: DummyAI[] = [];
 for (let i = 1; i <= 20; i++) {
     // Code to be executed in each iteration
-    dummyAIs.push(new DummyAI(0, 10 + 20 * i, 2, scene, world, obs_list));
+    dummyAIs.push(new DummyAI(0, 10 + 20 * i, 2, scene, world, jumpGenerator.obs_list));
 }
 
 const boundary = new Boundary(playerCar.obj3d, scene, world)
@@ -157,12 +157,14 @@ let delta;
 type UpdateObject = { update(): void }
 const updObjs: UpdateObject[] = [
     playerCar,
+    jumpGenerator,
     aggressiveAI,
     boundary,
     light,
     camera,
     bottomInfo,
     dashboard,
+    cannonDebugger,
 ]
 
 let npcCars: (DummyAI|AggressiveAI)[] = [
@@ -183,21 +185,15 @@ function animate() {
             // alert("failing npc")
             npcCar.car.destroy()
             npcCars.splice(i, 1)
-            npcCars.push(new DummyAI(randFloat(-Setting.groundWidth/4, Setting.groundWidth/4), playerCar.pos.y + 500 + randFloat(-200, 200), 2, scene, world, obs_list))
+            npcCars.push(new DummyAI(randFloat(-Setting.groundWidth/4, Setting.groundWidth/4), playerCar.pos.y + 500 + randFloat(-200, 200), 2, scene, world, jumpGenerator.obs_list))
         }
     }
     while(npcCars.length<15) {
-        npcCars.push(new DummyAI(randFloat(-Setting.groundWidth/4, Setting.groundWidth/4), playerCar.pos.y + 500 + playerCar.velocity.y * 10 + randFloat(-200, 200), 2, scene, world, obs_list))
+        npcCars.push(new DummyAI(randFloat(-Setting.groundWidth/4, Setting.groundWidth/4), playerCar.pos.y + 500 + playerCar.velocity.y * 10 + randFloat(-200, 200), 2, scene, world, jumpGenerator.obs_list))
     }
     npcCars.forEach(obj => obj.update());
     const dis = playerCar.pos.y
-    jumpGenerator.generate(dis).forEach((j) => {
-        j.update();
-        j.addin(scene, world);
-        obs_list.push(j)
-    });
     // scene.add( new THREE.DirectionalLightHelper(light.light) )
-    // cannonDebugger.update()
     render();
     stats.update();
 }

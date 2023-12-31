@@ -11,10 +11,14 @@
   - up/down: zoom in/out
 
 changelog:
+  updated 12/31 15:29
+    framework update: write obstacle generator as a updatable class
+    optimize: obstacles are created at initial, their positions are changed during updating
+    obstacles are generated in the center of the lane
   updated 12/31 14:41
     road texture adapts the number of lanes (in Setting)
   updated 12/31 14:37
-    framework update, never use scene/world directly in Car or other custom class
+    framework update: never use scene/world directly in Car or other custom class
     aggressive AI car can keep a maximum distance (in Setting) from player
   updated 12/31 06:14
     drive force is divided by speed to avoid infinitely fast car
