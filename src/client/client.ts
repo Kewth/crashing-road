@@ -149,7 +149,7 @@ textureLoader.load(
 // )
 
 const bottomInfo = new BottomInfo(playerCar.obj3d, aggressiveAI.car.obj3d);
-const dashboard = new DashBoard(() => 3.6 * playerCar.velocity().length()); // pass in speed in km/h
+const dashboard = new DashBoard(() => 3.6 * playerCar.velocity.length()); // pass in speed in km/h
 
 const clock = new THREE.Clock();
 let delta;
@@ -157,6 +157,7 @@ let delta;
 type UpdateObject = { update(): void }
 const updObjs: UpdateObject[] = [
     playerCar,
+    aggressiveAI,
     boundary,
     light,
     camera,
@@ -166,7 +167,6 @@ const updObjs: UpdateObject[] = [
 
 let npcCars: (DummyAI|AggressiveAI)[] = [
     ...dummyAIs,
-    aggressiveAI,
 ]
 
 const stats = new Stats()
@@ -179,25 +179,18 @@ function animate() {
     updObjs.forEach(obj => obj.update());
     for(let i = 0; i < npcCars.length; i++) {
         const npcCar = npcCars[i];
-        if(npcCar.car.pos().y < playerCar.pos().y-100 && npcCar instanceof DummyAI) {
+        if(npcCar.car.pos.y < playerCar.pos.y-100 && npcCar instanceof DummyAI) {
             // alert("failing npc")
             npcCar.car.destroy()
             npcCars.splice(i, 1)
-            npcCars.push(new DummyAI(randFloat(-Setting.groundWidth/4, Setting.groundWidth/4), playerCar.pos().y + 500 + randFloat(-200, 200), 2, scene, world, obs_list))
+            npcCars.push(new DummyAI(randFloat(-Setting.groundWidth/4, Setting.groundWidth/4), playerCar.pos.y + 500 + randFloat(-200, 200), 2, scene, world, obs_list))
         }
-        if(npcCar.car.pos().y < playerCar.pos().y-200 && npcCar instanceof AggressiveAI) {
-            // alert("failing npc")
-            npcCar.car.destroy()
-            npcCars.splice(i, 1)
-            npcCars.push(new AggressiveAI(randFloat(-Setting.groundWidth/4, Setting.groundWidth/4), playerCar.pos().y - 50, 2, scene, world, playerCar))
-        }
-        
     }
     while(npcCars.length<15) {
-        npcCars.push(new DummyAI(randFloat(-Setting.groundWidth/4, Setting.groundWidth/4), playerCar.pos().y + 500 + playerCar.velocity().y * 10 + randFloat(-200, 200), 2, scene, world, obs_list))
+        npcCars.push(new DummyAI(randFloat(-Setting.groundWidth/4, Setting.groundWidth/4), playerCar.pos.y + 500 + playerCar.velocity.y * 10 + randFloat(-200, 200), 2, scene, world, obs_list))
     }
     npcCars.forEach(obj => obj.update());
-    const dis = playerCar.pos().y
+    const dis = playerCar.pos.y
     jumpGenerator.generate(dis).forEach((j) => {
         j.update();
         j.addin(scene, world);

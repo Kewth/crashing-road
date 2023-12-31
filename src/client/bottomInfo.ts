@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { Car } from "./car"
+import { Setting } from "./setting";
 
 export class BottomInfo {
     // distanceContainer: HTMLDivElement
@@ -16,7 +17,8 @@ export class BottomInfo {
     
     update() {
         // this.distanceContainer.textContent = `${this.player3d.position.y.toFixed(0)} m`
+        const dis = Math.abs(this.player3d.position.y - this.aggressive3d.position.y)
         this.aggressiveDistanceContainer.textContent =
-            `${Math.abs(this.player3d.position.y - this.aggressive3d.position.y).toFixed(0)} m`
+            dis <= Setting.aggressiveDistance ? `${dis.toFixed(0)} m` : `>${Setting.aggressiveDistance} m`
     }
 }

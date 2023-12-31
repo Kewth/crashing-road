@@ -22,7 +22,7 @@ export class DummyAI {
         let nearest_obs = undefined
         let min_dist = 100000
 
-        const carPos = this.car.pos()
+        const carPos = this.car.pos
 
         for (const obs of this.obs_list) {
             if(obs.body.position.y > carPos.y && obs.body.position.y - carPos.y < min_dist) {
@@ -49,8 +49,8 @@ export class DummyAI {
 
         let vcon = new PIDController(0.1, 0.05, 0.01)
         let xcon = new PIDController(0.01, 0, 0.1)
-        this.car.drive(0.4 * vcon.update(targetv - this.car.velocity().length(), 0.1));
-        const posx = this.car.pos().x
+        this.car.drive(0.4 * vcon.update(targetv - this.car.velocity.length(), 0.1));
+        const posx = this.car.pos.x
         this.car.steer(xcon.update(posx - targetx, 0.1))
     }
 }

@@ -46,19 +46,15 @@ const wheelOptions = {
 
 export class Car {
     obj3d: THREE.Object3D;
-    vehicle: CANNON.RaycastVehicle;
-    wheel3ds: THREE.Object3D[];
-    wheelBodys: CANNON.Body[];
-    wheelIsBroken: boolean[];
-    collisionLockUntil: number;
-    usingModel: boolean;
-    scene: THREE.Scene;
-    world: CANNON.World;
+    private vehicle: CANNON.RaycastVehicle;
+    private wheel3ds: THREE.Object3D[];
+    private wheelBodys: CANNON.Body[];
+    private wheelIsBroken: boolean[];
+    private collisionLockUntil: number;
+    private usingModel: boolean;
 
     constructor(posX: number, posY: number, posZ: number, scene: THREE.Scene, world: CANNON.World) {
         this.obj3d = new THREE.Group();
-        this.scene = scene;
-        this.world = world;
         // chassis
         const chassisMesh = new THREE.Mesh(chassisGeometry, chassisMaterial)
         const chassisBody = new CANNON.Body({
@@ -174,11 +170,11 @@ export class Car {
 
     destroy() {
         // Remove the car's 3D object from the scene
-        this.scene.remove(this.obj3d);
+        this.obj3d.removeFromParent();
 
         // Remove the car's wheel bodies from the world
         for (const wheelBody of this.wheelBodys) {
-            this.world.removeBody(wheelBody);
+            wheelBody.world?.removeBody(wheelBody);
         }
 
         // Dispose materials used by the car
@@ -189,7 +185,7 @@ export class Car {
         // Dispose geometries used by the car
         chassisGeometry.dispose();
 
-        this.vehicle.removeFromWorld(this.world)
+        this.vehicle.world && this.vehicle.removeFromWorld(this.vehicle.world)
     }
 
 
@@ -215,8 +211,8 @@ export class Car {
      */
     drive(r: number) {
         r = Math.max(-1, Math.min(r, 1))
-        this.applyEngineForce(Math.min(r*(10/this.velocity().length()), 2), 2)
-        this.applyEngineForce(Math.min(r*(10/this.velocity().length()), 2), 3)
+        this.applyEngineForce(Math.min(r * (10 / this.velocity.length()), 2), 2)
+        this.applyEngineForce(Math.min(r * (10 / this.velocity.length()), 2), 3)
     }
 
     /**
@@ -295,12 +291,17 @@ export class Car {
     }
 
     // get 3d position
-    pos() {
+    get pos() {
         return this.obj3d.position
     }
     
     // get physical velocity
-    velocity() {
+    get velocity() {
         return this.vehicle.chassisBody.velocity
+    }
+    
+    // get world position
+    get worldPos() {
+        return this.vehicle.chassisBody.position
     }
 }
