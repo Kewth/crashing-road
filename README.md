@@ -11,6 +11,10 @@
   - up/down: zoom in/out
 
 changelog:
+  updated 12/31 17:25
+    framework update: CANNON material
+    generate fences between lanes
+    make fences cast shdows
   updated 12/31 15:29
     framework update: write obstacle generator as a updatable class
     optimize: obstacles are created at initial, their positions are changed during updating

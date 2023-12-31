@@ -2,6 +2,7 @@ import * as THREE from "three";
 import * as CANNON from "cannon-es";
 import { PhysicalObject } from "./physicalObject";
 import { Setting } from "./setting";
+import { CANNONMaterial } from "./cannonMaterial";
 
 const wallHeight = 3;
 const groundMaterial = new THREE.MeshPhongMaterial();
@@ -9,9 +10,6 @@ const wallMaterial = new THREE.MeshPhongMaterial({ color: 0xccccc });
 const groundGeometry = new THREE.PlaneGeometry(Setting.groundWidth, 1000);
 const wallGeometry = new THREE.PlaneGeometry(wallHeight * 2, 1000);
 const planeShape = new CANNON.Plane();
-
-export const groundCANNONmaterial = new CANNON.Material("ground");
-export const wallCANNONmaterial = new CANNON.Material("wall");
 
 // const groundWidth = 60
 // const groundLength = 120
@@ -46,7 +44,7 @@ export class Boundary {
             new CANNON.Body({
                 mass: 0,
                 shape: planeShape,
-                material: groundCANNONmaterial,
+                material: CANNONMaterial.ground,
             }),
         );
         this.ground.obj.receiveShadow = true;
@@ -56,7 +54,7 @@ export class Boundary {
             new CANNON.Body({
                 mass: 0,
                 shape: planeShape,
-                material: wallCANNONmaterial,
+                material: CANNONMaterial.wall,
             }),
         );
         this.leftWall.body.quaternion.setFromEuler(0, Math.PI / 2, 0);
@@ -68,7 +66,7 @@ export class Boundary {
             new CANNON.Body({
                 mass: 0,
                 shape: planeShape,
-                material: wallCANNONmaterial,
+                material: CANNONMaterial.wall,
             }),
         );
         this.rightWall.body.quaternion.setFromEuler(0, -Math.PI / 2, 0);
@@ -87,13 +85,11 @@ export class Boundary {
     useFenceModel(model: THREE.Object3D) {
         if (this.fenceLength !== undefined) return;
         const box = new THREE.Box3().setFromObject(model);
-        console.log(box);
         const length = box.max.y - box.min.y;
         [this.leftWall, this.rightWall].forEach(wall => {
             const scene = wall.obj.parent;
             scene?.remove(wall.obj);
             wall.obj = new THREE.Group();
-            wall.obj.receiveShadow = true;
             for (let y = -100; y < 400; y += length) {
                 const fence = model.clone();
                 if (wall === this.leftWall)

@@ -63,7 +63,6 @@ export class JumpGenerator {
                 jump && this.addObsInRandomPos(jump);
             }
             this.nowDis += generateLength;
-            console.log(this.obs_list);
         }
     }
 }

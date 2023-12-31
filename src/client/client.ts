@@ -1,12 +1,12 @@
 import * as THREE from "three";
 import * as CANNON from "cannon-es";
 import Stats from 'three/examples/jsm/libs/stats.module'
-import CannonDebugger from "cannon-es-debugger";
+// import CannonDebugger from "cannon-es-debugger";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader'
-import { Boundary, groundCANNONmaterial } from "./boundary";
+import { Boundary } from "./boundary";
 import { JumpGenerator } from "./jump";
-import { Car, chassisCANNONMaterial, wheelCANNONMaterial } from "./car";
+import { Car } from "./car";
 import { DummyAI } from "./dummyAI";
 import { AggressiveAI } from "./aggressiveAI";
 import { initKeyBinding } from "./keyBinding";
@@ -18,10 +18,12 @@ import { BottomInfo } from "./bottomInfo";
 import { NarrowWall } from "./narrowWall";
 import { randFloat } from "three/src/math/MathUtils";
 import { Setting } from "./setting";
+import { CANNONMaterial } from "./cannonMaterial";
+import { LaneFenceGenerator } from "./laneFence";
 
 const scene = new THREE.Scene();
 const world = new CANNON.World();
-const cannonDebugger = CannonDebugger(scene, world)
+// const cannonDebugger = CannonDebugger(scene, world)
 world.gravity.set(0, 0, -9.8);
 world.step(0.1);
 world.defaultContactMaterial.friction = 0;
@@ -40,6 +42,8 @@ playerCar.addCollisionDetection();
 
 const jumpGenerator = new JumpGenerator(playerCar.obj3d, scene, world);
 
+const laneFenceGenerator = new LaneFenceGenerator(playerCar.obj3d, scene, world);
+
 const aggressiveAI = new AggressiveAI(0, -20, 2, scene, world, playerCar);
 
 let dummyAIs: DummyAI[] = [];
@@ -55,8 +59,8 @@ const light = new CustomLight(playerCar.obj3d, scene);
 const camera = new TrailCamera(playerCar.obj3d)
 
 const wheel_ground = new CANNON.ContactMaterial(
-    wheelCANNONMaterial,
-    groundCANNONmaterial,
+    CANNONMaterial.wheel,
+    CANNONMaterial.ground,
     {
         friction: 0.3,
         restitution: 0,
@@ -64,8 +68,8 @@ const wheel_ground = new CANNON.ContactMaterial(
     },
 );
 const chassis_ground = new CANNON.ContactMaterial(
-    chassisCANNONMaterial,
-    groundCANNONmaterial,
+    CANNONMaterial.chassis,
+    CANNONMaterial.ground,
     {
         friction: 0.3,
         restitution: 0.3,
@@ -95,6 +99,12 @@ gltfLoader.load(
     'models/ferrari.glb',
     gltf => {
         carModel = gltf.scene.children[0];
+        carModel.traverse(node => {
+            if (node instanceof THREE.Mesh) {
+                // node.receiveShadow = true;
+                node.castShadow = true;
+            }
+        });
         console.log(carModel);
         const q = new THREE.Quaternion();
         q.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
@@ -116,8 +126,15 @@ gltfLoader.load(
         fenceModel = gltf.scene.children[0];
         fenceModel.rotateX(Math.PI / 2);
         fenceModel.rotateY(Math.PI);
+        fenceModel.traverse(node => {
+            if (node instanceof THREE.Mesh) {
+                node.receiveShadow = true;
+                node.castShadow = true;
+            }
+        });
         // scene.add(fenceModel);
-        boundary.useFenceModel(fenceModel)
+        boundary.useFenceModel(fenceModel);
+        laneFenceGenerator.useModel(fenceModel);
         console.log(fenceModel);
     },
     undefined,
@@ -158,13 +175,14 @@ type UpdateObject = { update(): void }
 const updObjs: UpdateObject[] = [
     playerCar,
     jumpGenerator,
+    laneFenceGenerator,
     aggressiveAI,
     boundary,
     light,
     camera,
     bottomInfo,
     dashboard,
-    cannonDebugger,
+    // cannonDebugger,
 ]
 
 let npcCars: (DummyAI|AggressiveAI)[] = [
@@ -202,6 +220,6 @@ function render() {
     renderer.render(scene, camera.camera);
 }
 
-const narrowWall = new NarrowWall(100, scene, world)
+// const narrowWall = new NarrowWall(100, scene, world)
 
 animate();

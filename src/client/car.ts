@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import * as CANNON from "cannon-es";
 import { PhysicalObject } from "./physicalObject";
+import { CANNONMaterial } from "./cannonMaterial";
 
 const chassisSizeX = 2.0;
 const chassisSizeY = 4.3;
@@ -23,9 +24,6 @@ const chassisGeometry = new THREE.BoxGeometry(
 const chassisMaterial = new THREE.MeshPhongMaterial({ color: 0x66ccff });
 const wheelMaterial = new THREE.MeshPhongMaterial({ color: 0x66ccff });
 const brokenWheelMaterial = new THREE.MeshPhongMaterial({ color: 0xff4500 });
-
-export const chassisCANNONMaterial = new CANNON.Material("chassis");
-export const wheelCANNONMaterial = new CANNON.Material("wheel");
 
 const wheelOptions = {
     radius: wheelRadius,
@@ -67,7 +65,7 @@ export class Car {
                 ),
             ),
             position: new CANNON.Vec3(posX, posY, posZ),
-            material: chassisCANNONMaterial,
+            material: CANNONMaterial.chassis,
         })
         chassisMesh.castShadow = true;
         this.obj3d.add(chassisMesh)
@@ -139,7 +137,7 @@ export class Car {
             );
             const wheelBody = new CANNON.Body({
                 mass: 0,
-                material: wheelCANNONMaterial,
+                material: CANNONMaterial.wheel,
                 type: CANNON.Body.KINEMATIC,
                 collisionFilterGroup: 0, // turn off collisions
             })
@@ -284,9 +282,6 @@ export class Car {
             }
         }
         this.obj3d.add(model);
-        model.traverse(node => {
-            if (node instanceof THREE.Mesh) { node.castShadow = true; }
-        });
         this.usingModel = true;
     }
 
