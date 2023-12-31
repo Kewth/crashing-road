@@ -113,7 +113,7 @@ export class Boundary {
         texture = texture.clone();
         texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
         const repeatY = 50;
-        texture.repeat.set(5, repeatY);
+        texture.repeat.set(Setting.numberLane, repeatY);
         if (this.roadTextureLength !== undefined) return;
         (this.ground.obj as THREE.Mesh).material = new THREE.MeshPhongMaterial({ map: texture });
         this.roadTextureLength = 1000 / repeatY;
