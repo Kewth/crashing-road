@@ -8,6 +8,7 @@ const wallHeight = 3;
 const groundMaterial = new THREE.MeshPhongMaterial();
 const wallMaterial = new THREE.MeshPhongMaterial({ color: 0xccccc });
 const groundGeometry = new THREE.PlaneGeometry(Setting.groundWidth, 1000);
+const envGeometry = new THREE.PlaneGeometry(1000, 1000);
 const wallGeometry = new THREE.PlaneGeometry(wallHeight * 2, 1000);
 const planeShape = new CANNON.Plane();
 
@@ -32,6 +33,8 @@ const planeShape = new CANNON.Plane();
 
 export class Boundary {
     ground: PhysicalObject
+    roadMesh: THREE.Mesh
+    envMesh: THREE.Mesh
     leftWall: PhysicalObject
     rightWall: PhysicalObject
     focusObj: THREE.Object3D
@@ -40,14 +43,20 @@ export class Boundary {
 
     constructor(focusObj: THREE.Object3D, scene: THREE.Scene, world: CANNON.World) {
         this.ground = new PhysicalObject(
-            new THREE.Mesh(groundGeometry, groundMaterial),
+            new THREE.Group(),
             new CANNON.Body({
                 mass: 0,
                 shape: planeShape,
                 material: CANNONMaterial.ground,
             }),
         );
-        this.ground.obj.receiveShadow = true;
+        this.roadMesh = new THREE.Mesh(groundGeometry, groundMaterial);
+        this.roadMesh.receiveShadow = true;
+        this.ground.obj.add(this.roadMesh);
+        this.envMesh = new THREE.Mesh(envGeometry, groundMaterial);
+        this.envMesh.position.set(0, 0, -0.1);
+        this.envMesh.receiveShadow = true;
+        this.ground.obj.add(this.envMesh);
 
         this.leftWall = new PhysicalObject(
             new THREE.Mesh(wallGeometry, wallMaterial),
@@ -111,10 +120,20 @@ export class Boundary {
         const repeatY = 50;
         texture.repeat.set(Setting.numberLane, repeatY);
         if (this.roadTextureLength !== undefined) return;
-        (this.ground.obj as THREE.Mesh).material = new THREE.MeshPhongMaterial({ map: texture });
+        this.roadMesh.material = new THREE.MeshPhongMaterial({ map: texture });
         this.roadTextureLength = 1000 / repeatY;
     }
-    
+
+    useEnvTexture(texture: THREE.Texture) {
+        texture = texture.clone();
+        texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+        const repeatX = 100;
+        const repeatY = 100;
+        texture.repeat.set(repeatX, repeatY);
+        // if (this.roadTextureLength !== undefined) return; TODO
+        this.envMesh.material = new THREE.MeshPhongMaterial({ map: texture });
+    }
+
     // FIXME: 使用纹理代替模型 (done)
     // useRoadModel(model: THREE.Object3D) {
     //     const box = new THREE.Box3().setFromObject(model);

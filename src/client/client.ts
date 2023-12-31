@@ -199,6 +199,16 @@ textureLoader.load(
     err => { console.error(err) }
 )
 
+textureLoader.load(
+    'images/ground.jpg',
+    tex => {
+        boundary.useEnvTexture(tex);
+    },
+    undefined,
+    err => { console.error(err) }
+)
+
+
 // let roadModel: THREE.Object3D | undefined = undefined
 // gltfLoader.load(
 //     'models/road.glb',
