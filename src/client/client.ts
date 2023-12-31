@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import * as CANNON from "cannon-es";
 import Stats from 'three/examples/jsm/libs/stats.module'
-// import CannonDebugger from "cannon-es-debugger";
+import CannonDebugger from "cannon-es-debugger";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader'
 import { Boundary } from "./boundary";
@@ -20,10 +20,11 @@ import { randFloat } from "three/src/math/MathUtils";
 import { Setting } from "./setting";
 import { CANNONMaterial } from "./cannonMaterial";
 import { LaneFenceGenerator } from "./laneFence";
+import { TruckGenerator } from "./truck";
 
 const scene = new THREE.Scene();
 const world = new CANNON.World();
-// const cannonDebugger = CannonDebugger(scene, world)
+const cannonDebugger = CannonDebugger(scene, world)
 world.gravity.set(0, 0, -9.8);
 world.step(0.1);
 world.defaultContactMaterial.friction = 0;
@@ -37,7 +38,8 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
-const playerCar = new Car(0, 0, 2, scene, world);
+
+const playerCar = new Car(0, 0, 2, 'ferrari', scene, world);
 playerCar.addCollisionDetection();
 
 const jumpGenerator = new JumpGenerator(playerCar.obj3d, scene, world);
@@ -46,11 +48,13 @@ const laneFenceGenerator = new LaneFenceGenerator(playerCar.obj3d, scene, world)
 
 const aggressiveAI = new AggressiveAI(0, -20, 2, scene, world, playerCar);
 
-let dummyAIs: DummyAI[] = [];
-for (let i = 1; i <= 20; i++) {
-    // Code to be executed in each iteration
-    dummyAIs.push(new DummyAI(0, 10 + 20 * i, 2, scene, world, jumpGenerator.obs_list));
-}
+// let dummyAIs: DummyAI[] = [];
+// for (let i = 1; i <= 20; i++) {
+//     // Code to be executed in each iteration
+//     dummyAIs.push(new DummyAI(0, 10 + 20 * i, 2, scene, world, jumpGenerator.obs_list));
+// }
+
+const truckGenerator = new TruckGenerator(playerCar.obj3d, scene, world);
 
 const boundary = new Boundary(playerCar.obj3d, scene, world)
 
@@ -94,26 +98,45 @@ const gltfLoader = new GLTFLoader();
 gltfLoader.setDRACOLoader(dracoLoader);
 // let boxHelper: THREE.BoxHelper | undefined = undefined
 
-let carModel: THREE.Object3D | undefined = undefined
 gltfLoader.load(
     'models/ferrari.glb',
     gltf => {
-        carModel = gltf.scene.children[0];
-        carModel.traverse(node => {
+        const model = gltf.scene.children[0];
+        model.traverse(node => {
             if (node instanceof THREE.Mesh) {
                 // node.receiveShadow = true;
                 node.castShadow = true;
             }
         });
-        console.log(carModel);
         const q = new THREE.Quaternion();
         q.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
-        // playerCar.chassis.useModel(scene, carModel, q)
-        carModel.applyQuaternion(q);
-        playerCar.useModel(carModel);
+        model.applyQuaternion(q);
+        Car.addModel('ferrari', model);
         // scene.add(carModel)
         // boxHelper = new THREE.BoxHelper( carModel, 0xffff00 );
         // scene.add(boxHelper)
+    },
+    undefined,
+    err => { console.error(err) }
+);
+
+gltfLoader.load(
+    'models/truck.glb',
+    gltf => {
+        const model = gltf.scene.children[0];
+        model.scale.set(0.01, 0.01, 0.01);
+        model.traverse(node => {
+            if (node instanceof THREE.Mesh) {
+                // node.receiveShadow = true;
+                node.castShadow = true;
+            }
+        });
+        model.quaternion.set(0, 0, 0, 1);
+        const box = new THREE.Box3().setFromObject(model);
+        model.position.x -= (box.max.x + box.min.x) / 2;
+        const q = new THREE.Quaternion();
+        q.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+        Car.addModel('truck', model);
     },
     undefined,
     err => { console.error(err) }
@@ -176,18 +199,19 @@ const updObjs: UpdateObject[] = [
     playerCar,
     jumpGenerator,
     laneFenceGenerator,
+    truckGenerator,
     aggressiveAI,
     boundary,
     light,
     camera,
     bottomInfo,
     dashboard,
-    // cannonDebugger,
+    cannonDebugger,
 ]
 
-let npcCars: (DummyAI|AggressiveAI)[] = [
-    ...dummyAIs,
-]
+// let npcCars: (DummyAI|AggressiveAI)[] = [
+//     ...dummyAIs,
+// ]
 
 const stats = new Stats()
 document.body.appendChild(stats.dom)
@@ -197,20 +221,19 @@ function animate() {
     delta = Math.min(clock.getDelta(), 0.1);
     world.step(delta);
     updObjs.forEach(obj => obj.update());
-    for(let i = 0; i < npcCars.length; i++) {
-        const npcCar = npcCars[i];
-        if(npcCar.car.pos.y < playerCar.pos.y-100 && npcCar instanceof DummyAI) {
-            // alert("failing npc")
-            npcCar.car.destroy()
-            npcCars.splice(i, 1)
-            npcCars.push(new DummyAI(randFloat(-Setting.groundWidth/4, Setting.groundWidth/4), playerCar.pos.y + 500 + randFloat(-200, 200), 2, scene, world, jumpGenerator.obs_list))
-        }
-    }
-    while(npcCars.length<15) {
-        npcCars.push(new DummyAI(randFloat(-Setting.groundWidth/4, Setting.groundWidth/4), playerCar.pos.y + 500 + playerCar.velocity.y * 10 + randFloat(-200, 200), 2, scene, world, jumpGenerator.obs_list))
-    }
-    npcCars.forEach(obj => obj.update());
-    const dis = playerCar.pos.y
+    // for(let i = 0; i < npcCars.length; i++) {
+    //     const npcCar = npcCars[i];
+    //     if(npcCar.car.pos.y < playerCar.pos.y-100 && npcCar instanceof DummyAI) {
+    //         // alert("failing npc")
+    //         npcCar.car.destroy()
+    //         npcCars.splice(i, 1)
+    //         npcCars.push(new DummyAI(randFloat(-Setting.groundWidth/4, Setting.groundWidth/4), playerCar.pos.y + 500 + randFloat(-200, 200), 2, scene, world, jumpGenerator.obs_list))
+    //     }
+    // }
+    // while(npcCars.length<15) {
+    //     npcCars.push(new DummyAI(randFloat(-Setting.groundWidth/4, Setting.groundWidth/4), playerCar.pos.y + 500 + playerCar.velocity.y * 10 + randFloat(-200, 200), 2, scene, world, jumpGenerator.obs_list))
+    // }
+    // npcCars.forEach(obj => obj.update());
     // scene.add( new THREE.DirectionalLightHelper(light.light) )
     render();
     stats.update();

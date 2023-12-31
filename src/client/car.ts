@@ -3,30 +3,64 @@ import * as CANNON from "cannon-es";
 import { PhysicalObject } from "./physicalObject";
 import { CANNONMaterial } from "./cannonMaterial";
 
-const chassisSizeX = 2.0;
-const chassisSizeY = 4.3;
-const chassisSizeZ = 0.8;
-const wheelOffsetX = 1.0;
-const wheelOffsetY = 1.6;
-const wheelOffsetZ = 0;
-const wheelRadius = 0.4;
-const carMass = 500;
+interface CarConfig {
+    chassisSizeX: number;
+    chassisSizeY: number;
+    chassisSizeZ: number;
+    wheelOffsetX: number;
+    wheelOffsetY: number;
+    wheelOffsetZ: number;
+    wheelRadius: number;
+    mass: number;
+}
+
+type ConfigName = "ferrari" | "truck"
+const configMap: {[key in ConfigName]: CarConfig} = {
+    "ferrari" : {
+        chassisSizeX: 2.0,
+        chassisSizeY: 4.3,
+        chassisSizeZ: 0.8,
+        wheelOffsetX: 1.0,
+        wheelOffsetY: 1.6,
+        wheelOffsetZ: 0,
+        wheelRadius: 0.4,
+        mass: 500,
+    },
+    "truck" : {
+        chassisSizeX: 2.2,
+        chassisSizeY: 5.2,
+        chassisSizeZ: 2.7,
+        wheelOffsetX: 1.1,
+        wheelOffsetY: 2.1,
+        wheelOffsetZ: 0.8,
+        wheelRadius: 0.5,
+        mass: 1000,
+    },
+}
+const modelMap: {[key in ConfigName]: THREE.Object3D | undefined} = {
+    "ferrari" : undefined,
+    "truck" : undefined,
+}
+
+// const chassisSizeX = 2.0;
+// const chassisSizeY = 4.3;
+// const chassisSizeZ = 0.8;
+// const wheelOffsetX = 1.0;
+// const wheelOffsetY = 1.6;
+// const wheelOffsetZ = 0;
+// const wheelRadius = 0.4;
+// const carMass = 500;
 
 const maxSteerVal = 0.5;
 const maxForce = 1500;
-const brakeForce = 100000;
+const brakeForce = 500;
 
-const chassisGeometry = new THREE.BoxGeometry(
-    chassisSizeX,
-    chassisSizeY,
-    chassisSizeZ,
-);
 const chassisMaterial = new THREE.MeshPhongMaterial({ color: 0x66ccff });
 const wheelMaterial = new THREE.MeshPhongMaterial({ color: 0x66ccff });
 const brokenWheelMaterial = new THREE.MeshPhongMaterial({ color: 0xff4500 });
 
 const wheelOptions = {
-    radius: wheelRadius,
+    radius: 0, // need to be set
     directionLocal: new CANNON.Vec3(0, 0, -1),
     suspensionStiffness: 30,
     suspensionRestLength: 0.3,
@@ -36,7 +70,7 @@ const wheelOptions = {
     maxSuspensionForce: 100000,
     rollInfluence: 0.01,
     axleLocal: new CANNON.Vec3(1, 0, 0),
-    chassisConnectionPointLocal: new CANNON.Vec3(-1, 1, 0),
+    chassisConnectionPointLocal: new CANNON.Vec3(-1, 1, 0), // need to be set
     maxSuspensionTravel: 0.3,
     customSlidingRotationalSpeed: -30,
     useCustomSlidingRotationalSpeed: true,
@@ -44,24 +78,33 @@ const wheelOptions = {
 
 export class Car {
     obj3d: THREE.Object3D;
+    private configName: ConfigName;
     private vehicle: CANNON.RaycastVehicle;
-    private wheel3ds: THREE.Object3D[];
+    private wheel3ds: (THREE.Object3D | undefined)[];
     private wheelBodys: CANNON.Body[];
     private wheelIsBroken: boolean[];
     private collisionLockUntil: number;
     private usingModel: boolean;
 
-    constructor(posX: number, posY: number, posZ: number, scene: THREE.Scene, world: CANNON.World) {
+    constructor(posX: number, posY: number, posZ: number, configName: ConfigName, scene: THREE.Scene, world: CANNON.World) {
         this.obj3d = new THREE.Group();
+        const config = configMap[configName];
+        if (!config) console.error(`no config (${configName})`)
+        this.configName = configName;
         // chassis
+        const chassisGeometry = new THREE.BoxGeometry(
+            config.chassisSizeX,
+            config.chassisSizeY,
+            config.chassisSizeZ,
+        );
         const chassisMesh = new THREE.Mesh(chassisGeometry, chassisMaterial)
         const chassisBody = new CANNON.Body({
-            mass: carMass,
+            mass: config.mass,
             shape: new CANNON.Box(
                 new CANNON.Vec3(
-                    chassisSizeX / 2,
-                    chassisSizeY / 2,
-                    chassisSizeZ / 2,
+                    config.chassisSizeX / 2,
+                    config.chassisSizeY / 2,
+                    config.chassisSizeZ / 2,
                 ),
             ),
             position: new CANNON.Vec3(posX, posY, posZ),
@@ -76,28 +119,29 @@ export class Car {
             indexForwardAxis: 1,
             indexUpAxis: 2,
         });
+        wheelOptions.radius = config.wheelRadius
         wheelOptions.chassisConnectionPointLocal.set(
-            wheelOffsetX,
-            wheelOffsetY,
-            -wheelOffsetZ,
+            config.wheelOffsetX,
+            config.wheelOffsetY,
+            -config.wheelOffsetZ,
         );
         this.vehicle.addWheel(wheelOptions);
         wheelOptions.chassisConnectionPointLocal.set(
-            -wheelOffsetX,
-            wheelOffsetY,
-            -wheelOffsetZ,
+            -config.wheelOffsetX,
+            config.wheelOffsetY,
+            -config.wheelOffsetZ,
         );
         this.vehicle.addWheel(wheelOptions);
         wheelOptions.chassisConnectionPointLocal.set(
-            wheelOffsetX,
-            -wheelOffsetY,
-            -wheelOffsetZ,
+            config.wheelOffsetX,
+            -config.wheelOffsetY,
+            -config.wheelOffsetZ,
         );
         this.vehicle.addWheel(wheelOptions);
         wheelOptions.chassisConnectionPointLocal.set(
-            -wheelOffsetX,
-            -wheelOffsetY,
-            -wheelOffsetZ,
+            -config.wheelOffsetX,
+            -config.wheelOffsetY,
+            -config.wheelOffsetZ,
         );
         this.vehicle.addWheel(wheelOptions);
         // wheels
@@ -124,7 +168,7 @@ export class Car {
             wheelMesh.position.set(
                 wheel.chassisConnectionPointLocal.x,
                 wheel.chassisConnectionPointLocal.y,
-                wheel.chassisConnectionPointLocal.z - chassisSizeZ / 2,
+                wheel.chassisConnectionPointLocal.z - config.chassisSizeZ / 2,
             );
             this.obj3d.add(wheelMesh);
             this.wheel3ds.push(wheelMesh);
@@ -181,7 +225,7 @@ export class Car {
         brokenWheelMaterial.dispose();
 
         // Dispose geometries used by the car
-        chassisGeometry.dispose();
+        // chassisGeometry.dispose();
 
         this.vehicle.world && this.vehicle.removeFromWorld(this.vehicle.world)
     }
@@ -209,8 +253,9 @@ export class Car {
      */
     drive(r: number) {
         r = Math.max(-1, Math.min(r, 1))
-        this.applyEngineForce(Math.min(r * (10 / this.velocity.length()), 2), 2)
-        this.applyEngineForce(Math.min(r * (10 / this.velocity.length()), 2), 3)
+        r *= 10 / (this.velocity.length() + 10)
+        this.applyEngineForce(r, 2);
+        this.applyEngineForce(r, 3);
     }
 
     /**
@@ -225,21 +270,27 @@ export class Car {
 
     // update information to render
     update() {
+        if (!this.usingModel && modelMap[this.configName]) {
+            this.useModel(modelMap[this.configName]!)
+        }
         PhysicalObject.update(this.obj3d, this.vehicle.chassisBody)
         for (let i = 0; i < this.vehicle.wheelInfos.length; i++) {
-            this.wheel3ds[i].rotation.set(0, 0, 0);
+            const w = this.wheel3ds[i];
+            if (!w) break;
+            w.rotation.set(0, 0, 0);
             if (this.usingModel) {
-                this.wheel3ds[i].rotateY(this.vehicle.wheelInfos[i].steering);
-                this.wheel3ds[i].rotateX(-this.vehicle.wheelInfos[i].rotation);
+                w.rotateY(this.vehicle.wheelInfos[i].steering);
+                w.rotateX(-this.vehicle.wheelInfos[i].rotation);
             }
             else {
-                this.wheel3ds[i].rotateZ(this.vehicle.wheelInfos[i].steering);
+                w.rotateZ(this.vehicle.wheelInfos[i].steering);
             }
         }
     }
 
     // call this after initialization if this car is controlled by player
     addCollisionDetection() {
+        return;
         // Listen for collisions
         this.vehicle.chassisBody.addEventListener("collide", (e: any) => {
             const t = Date.now();
@@ -247,7 +298,7 @@ export class Car {
                 // Get the relative velocity of the collision
                 const velocity = e.contact.getImpactVelocityAlongNormal();
                 // Calculate the damage. This is a simple example, you might want to use a more complex formula.
-                const damage = Math.abs(velocity) * carMass
+                const damage = Math.abs(velocity) * this.vehicle.chassisBody.mass
                 // If the chassis's health is 0 or less, remove it from the game.
                 if (damage > 3000) {
                     const index = Math.floor(Math.random() * 4);
@@ -267,19 +318,17 @@ export class Car {
     }
 
     // use a model to replace simple mesh
-    useModel(model: THREE.Object3D) {
-        model = model.clone();
+    private useModel(model: THREE.Object3D) {
         if (this.usingModel) return;
-        model.position.z -= chassisSizeZ / 2;
+        model = model.clone();
+        model.position.z -= configMap[this.configName].chassisSizeZ / 2;
         this.obj3d.remove(this.obj3d.children[0]);
         const wheelNames = ['wheel_fr', 'wheel_fl', 'wheel_rr', 'wheel_rl'];
         for (let i = 0; i < 4; i ++) {
             const w = model.getObjectByName(wheelNames[i]);
-            if (w) {
-                w.scale.set(1.2, 1.2, 1.2)
-                this.obj3d.remove(this.wheel3ds[i]);
-                this.wheel3ds[i] = w;
-            }
+            this.obj3d.remove(this.wheel3ds[i]!);
+            this.wheel3ds[i] = w;
+            w?.scale.set(1.2, 1.2, 1.2);
         }
         this.obj3d.add(model);
         this.usingModel = true;
@@ -289,14 +338,29 @@ export class Car {
     get pos() {
         return this.obj3d.position
     }
-    
+
+    // get 3d quaternion
+    get quaternion() {
+        return this.obj3d.quaternion
+    }
+
     // get physical velocity
     get velocity() {
         return this.vehicle.chassisBody.velocity
     }
-    
+
     // get world position
     get worldPos() {
         return this.vehicle.chassisBody.position
+    }
+
+    // get world position
+    get worldQuaternion() {
+        return this.vehicle.chassisBody.quaternion
+    }
+
+    // add a model map, the corresponding cars will use this model automatically
+    static addModel(name: ConfigName, model: THREE.Object3D) {
+        modelMap[name] = model;
     }
 }

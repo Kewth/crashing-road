@@ -41,7 +41,6 @@ export class JumpGenerator {
             }
             this.nowDis += generateLength;
         }
-        this.obs_list.forEach(obs => console.log(obs.body.position))
     }
     
     private addObsInRandomPos(obs: PhysicalObject) {

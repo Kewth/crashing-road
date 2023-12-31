@@ -10,7 +10,11 @@
 - Camera Control
   - up/down: zoom in/out
 
-changelog:
+changelog since 12/31:
+  updated 12/31 20:04
+    framework update: car config
+    add dummyLaneAI, which try to keep a car in the middle of the closest lane in a simple way
+    generate trucks, and use a truck 3d model to render them
   updated 12/31 17:25
     framework update: CANNON material
     generate fences between lanes

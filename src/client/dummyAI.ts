@@ -10,7 +10,7 @@ export class DummyAI {
     target_v: number
 
     constructor(posX: number, posY: number, posZ: number, scene: THREE.Scene, world: CANNON.World, obs_list: PhysicalObject[]) {
-        this.car = new Car(posX, posY, posZ, scene, world);
+        this.car = new Car(posX, posY, posZ, 'ferrari', scene, world);
         this.obs_list = obs_list;
         this.target_x = 0;
         this.target_v = 10;
