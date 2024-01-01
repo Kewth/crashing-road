@@ -97,14 +97,8 @@ export class Car {
     private wheelIsBroken: boolean[];
     private collisionLockUntil: number;
     private usingModel: boolean;
-    scene: THREE.Scene;
-    world: CANNON.World;
-    is_user: boolean;
 
-    constructor(posX: number, posY: number, posZ: number, configName: ConfigName, scene: THREE.Scene, world: CANNON.World, is_user: boolean=false) {
-        this.scene = scene
-        this.world = world
-        this.is_user = is_user
+    constructor(posX: number, posY: number, posZ: number, configName: ConfigName, scene: THREE.Scene, world: CANNON.World) {
         this.obj3d = new THREE.Group();
         const config = configMap[configName];
         if (!config) console.error(`no config (${configName})`)
@@ -386,6 +380,13 @@ export class Car {
     // get normailized direction
     direction() {
         return new THREE.Vector3(0, 1, 0).applyQuaternion(this.obj3d.quaternion).normalize();
+    }
+    
+    scene() {
+        return this.obj3d.parent as THREE.Scene
+    }
+    world() {
+        return this.chassisBody.world!
     }
 
     // add a model map, the corresponding cars will use this model automatically
