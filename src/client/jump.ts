@@ -32,6 +32,7 @@ export class JumpGenerator {
                     new THREE.Mesh(jumpGeometry, jumpMaterial),
                     new CANNON.Body({
                         mass: 0,
+                        type: CANNON.Body.STATIC,
                         shape: jumpShape,
                     }),
                 );

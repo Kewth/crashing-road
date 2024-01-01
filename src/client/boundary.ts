@@ -46,6 +46,7 @@ export class Boundary {
             new THREE.Group(),
             new CANNON.Body({
                 mass: 0,
+                type: CANNON.Body.STATIC,
                 shape: planeShape,
                 material: CANNONMaterial.ground,
             }),
@@ -62,6 +63,7 @@ export class Boundary {
             new THREE.Mesh(wallGeometry, wallMaterial),
             new CANNON.Body({
                 mass: 0,
+                type: CANNON.Body.STATIC,
                 shape: planeShape,
                 material: CANNONMaterial.wall,
             }),
@@ -74,6 +76,7 @@ export class Boundary {
             new THREE.Mesh(wallGeometry, wallMaterial),
             new CANNON.Body({
                 mass: 0,
+                type: CANNON.Body.STATIC,
                 shape: planeShape,
                 material: CANNONMaterial.wall,
             }),

@@ -63,15 +63,15 @@ const light = new CustomLight(player.obj3d, scene);
 
 const camera = new TrailCamera(player.obj3d)
 
-const wheel_ground = new CANNON.ContactMaterial(
-    CANNONMaterial.wheel,
-    CANNONMaterial.ground,
-    {
-        friction: 0.3,
-        restitution: 0,
-        contactEquationStiffness: 1000,
-    },
-);
+// const wheel_ground = new CANNON.ContactMaterial(
+//     CANNONMaterial.wheel,
+//     CANNONMaterial.ground,
+//     {
+//         friction: 1000,
+//         restitution: 0,
+//         contactEquationStiffness: 1000,
+//     },
+// );
 const chassis_ground = new CANNON.ContactMaterial(
     CANNONMaterial.chassis,
     CANNONMaterial.ground,

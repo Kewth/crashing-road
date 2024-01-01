@@ -2,6 +2,10 @@
 
 `npm run dev`
 
+## How to deploy?
+
+`npm run build` + `npm run deploy`
+
 ## How to play?
 
 - Vehicle Control
@@ -10,7 +14,10 @@
 - Camera Control
   - up/down: zoom in/out
 
-changelog since 12/31:
+## change log
+
+>
+changelog in 12/31:
   updated 12/31 23:11
     use ground texture
   updated 12/31 22:47
@@ -43,3 +50,4 @@ changelog since 12/31:
   updated 12/31 06:14
     drive force is divided by speed to avoid infinitely fast car
     npc cars respawn if lagging behind too much
+>

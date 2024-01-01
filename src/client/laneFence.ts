@@ -28,6 +28,7 @@ export class LaneFenceGenerator {
                 new THREE.Group(),
                 new CANNON.Body({
                     mass: 0,
+                    type: CANNON.Body.STATIC,
                     shape: wallShape,
                     material: CANNONMaterial.wall,
                 }),

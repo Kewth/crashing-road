@@ -26,7 +26,7 @@ const configMap: {[key in ConfigName]: CarConfig} = {
         wheelOffsetZ: 0,
         wheelRadius: 0.4,
         mass: 500,
-        engineForce: 1500,
+        engineForce: 3000,
     },
     "truck" : {
         chassisSizeX: 2.2,
@@ -67,7 +67,8 @@ const modelMap: {[key in ConfigName]: THREE.Object3D | undefined} = {
 // const carMass = 500;
 
 const maxSteerVal = 0.5;
-const brakeForce = 500;
+const brakeForce = 200;
+const basicBrakeForce = 5;
 
 const chassisMaterial = new THREE.MeshPhongMaterial({ color: 0x66ccff });
 const wheelMaterial = new THREE.MeshPhongMaterial({ color: 0x66ccff });
@@ -197,7 +198,7 @@ export class Car {
             );
             const wheelBody = new CANNON.Body({
                 mass: 0,
-                material: CANNONMaterial.wheel,
+                // material: CANNONMaterial.wheel,
                 type: CANNON.Body.KINEMATIC,
                 collisionFilterGroup: 0, // turn off collisions
             })
@@ -224,6 +225,8 @@ export class Car {
         this.usingModel = false;
         this.collisionLockUntil = Date.now();
         this.engineForce = config.engineForce;
+        // apply basic brake force
+        this.brake(0);
     }
 
 
@@ -249,10 +252,10 @@ export class Car {
 
 
     brake(r: number) {
-        this.vehicle.setBrake(r * brakeForce, 0);
-        this.vehicle.setBrake(r * brakeForce, 1);
-        this.vehicle.setBrake(r * brakeForce, 2);
-        this.vehicle.setBrake(r * brakeForce, 3);
+        this.vehicle.setBrake(basicBrakeForce + r * brakeForce, 0);
+        this.vehicle.setBrake(basicBrakeForce + r * brakeForce, 1);
+        this.vehicle.setBrake(basicBrakeForce + r * brakeForce, 2);
+        this.vehicle.setBrake(basicBrakeForce + r * brakeForce, 3);
     }
 
     applyEngineForce(r: number, i: number) {
@@ -269,8 +272,9 @@ export class Car {
      * @param r the relative drive. ranged between -1 (full reverse) and +1 (full drive)
      */
     drive(r: number) {
-        const lim = 10 / (this.velocity.length() + 10)
-        r = Math.max(-lim, Math.min(r, lim))
+        // const lim = 10 / (this.velocity.length() + 10);
+        const lim = 1;
+        r = Math.max(-lim, Math.min(r, lim));
         this.applyEngineForce(r, 2);
         this.applyEngineForce(r, 3);
     }
@@ -384,7 +388,15 @@ export class Car {
     direction() {
         return new THREE.Vector3(0, 1, 0).applyQuaternion(this.obj3d.quaternion).normalize();
     }
-    
+
+    upDirection() {
+        return new THREE.Vector3(0, 0, 1).applyQuaternion(this.obj3d.quaternion).normalize();
+    }
+
+    isFullyOnGround() {
+        return this.vehicle.numWheelsOnGround == 4;
+    }
+
     scene() {
         return this.obj3d.parent as THREE.Scene
     }
