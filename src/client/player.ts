@@ -1,3 +1,4 @@
+import * as THREE from "three";
 import { Car } from "./car";
 import { DriftCreator } from "./drift";
 
@@ -59,18 +60,39 @@ export class Player {
         });
         // on mobile
         document.addEventListener("touchstart", (event) => {
+            car.brake(0);
             const x = getX(event);
             const y = getY(event);
             this.drivingDirection = -y;
+            const car_heading = car.direction()
+            const velocity_direction = new THREE.Vector3(car.velocity.x, car.velocity.y, 0).normalize();
+            const dot_product = car_heading.dot(velocity_direction);
+            if(-y < 0) {
+                if(dot_product > 0) {
+                    this.drivingDirection = 0;
+                    car.brake(y);
+                }
+            }
             car.steer(-x);
         })
         document.addEventListener("touchmove", (event) => {
+            car.brake(0);
             const x = getX(event);
             const y = getY(event);
             this.drivingDirection = -y;
+            const car_heading = car.direction()
+            const velocity_direction = new THREE.Vector3(car.velocity.x, car.velocity.y, 0).normalize();
+            const dot_product = car_heading.dot(velocity_direction);
+            if(-y < 0) {
+                if(dot_product > 0) {
+                    this.drivingDirection = 0;
+                    car.brake(y);
+                }
+            }
             car.steer(-x);
         })
         document.addEventListener("touchend", (event) => {
+            car.brake(0);
             this.drivingDirection = 0;
             car.steer(0);
         })
