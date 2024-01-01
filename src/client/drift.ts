@@ -14,45 +14,26 @@ function update_drift(car: Car) {
         carHeading = carHeading.multiplyScalar(1)
         let carHeadingNormal = new THREE.Vector3(-carHeading.y, carHeading.x, 0)
         carHeadingNormal = carHeadingNormal.multiplyScalar(0.4)
-        const drift_mark1 = new PhysicalObject(
-            new THREE.Mesh(driftGeometry, driftMaterial),
-            new CANNON.Body(),
-        );
-        drift_mark1.body.quaternion.setFromEuler(0, 0, 0);
-        drift_mark1.obj.receiveShadow = true;
-        drift_mark1.body.position.set(car.pos.x+carHeading.x-carHeadingNormal.x, car.pos.y+carHeading.y-carHeadingNormal.y, 0.01);
-        drift_mark1.addin(car.scene(), car.world())
-        drift_mark1.update()
 
-        const drift_mark2 = new PhysicalObject(
-            new THREE.Mesh(driftGeometry, driftMaterial),
-            new CANNON.Body(),
-        );
-        drift_mark2.body.quaternion.setFromEuler(0, 0, 0);
-        drift_mark2.obj.receiveShadow = true;
-        drift_mark2.body.position.set(car.pos.x+carHeading.x+carHeadingNormal.x, car.pos.y+carHeading.y+carHeadingNormal.y, 0.01);
-        drift_mark2.addin(car.scene(), car.world())
-        drift_mark2.update()
+        const drift_mark1 = new THREE.Mesh(driftGeometry, driftMaterial);
+        drift_mark1.receiveShadow = true;
+        drift_mark1.position.set(car.pos.x+carHeading.x-carHeadingNormal.x, car.pos.y+carHeading.y-carHeadingNormal.y, 0.01);
+        car.scene().add(drift_mark1)
 
-        const drift_mark3 = new PhysicalObject(
-            new THREE.Mesh(driftGeometry, driftMaterial),
-            new CANNON.Body(),
-        );
-        drift_mark3.body.quaternion.setFromEuler(0, 0, 0);
-        drift_mark3.obj.receiveShadow = true;
-        drift_mark3.body.position.set(car.pos.x-carHeading.x-carHeadingNormal.x, car.pos.y-carHeading.y-carHeadingNormal.y, 0.01);
-        drift_mark2.addin(car.scene(), car.world())
-        drift_mark3.update()
+        const drift_mark2 = new THREE.Mesh(driftGeometry, driftMaterial);
+        drift_mark2.receiveShadow = true;
+        drift_mark2.position.set(car.pos.x+carHeading.x+carHeadingNormal.x, car.pos.y+carHeading.y+carHeadingNormal.y, 0.01);
+        car.scene().add(drift_mark2)
 
-        const drift_mark4 = new PhysicalObject(
-            new THREE.Mesh(driftGeometry, driftMaterial),
-            new CANNON.Body(),
-        );
-        drift_mark4.body.quaternion.setFromEuler(0, 0, 0);
-        drift_mark4.obj.receiveShadow = true;
-        drift_mark4.body.position.set(car.pos.x-carHeading.x+carHeadingNormal.x, car.pos.y-carHeading.y+carHeadingNormal.y, 0.01);
-        drift_mark2.addin(car.scene(), car.world())
-        drift_mark4.update()
+        const drift_mark3 = new THREE.Mesh(driftGeometry, driftMaterial);
+        drift_mark3.receiveShadow = true;
+        drift_mark3.position.set(car.pos.x-carHeading.x-carHeadingNormal.x, car.pos.y-carHeading.y-carHeadingNormal.y, 0.01);
+        car.scene().add(drift_mark3)
+
+        const drift_mark4 = new THREE.Mesh(driftGeometry, driftMaterial);
+        drift_mark4.receiveShadow = true;
+        drift_mark4.position.set(car.pos.x-carHeading.x+carHeadingNormal.x, car.pos.y-carHeading.y+carHeadingNormal.y, 0.01);
+        car.scene().add(drift_mark3)
     }
 }
 
