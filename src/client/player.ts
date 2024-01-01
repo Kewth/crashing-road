@@ -60,6 +60,7 @@ export class Player {
         });
         // on mobile
         document.addEventListener("touchstart", (event) => {
+            if (!this.live) return;
             car.brake(0);
             const x = getX(event);
             const y = getY(event);
@@ -76,6 +77,7 @@ export class Player {
             car.steer(-x);
         })
         document.addEventListener("touchmove", (event) => {
+            if (!this.live) return;
             car.brake(0);
             const x = getX(event);
             const y = getY(event);
@@ -92,6 +94,7 @@ export class Player {
             car.steer(-x);
         })
         document.addEventListener("touchend", (event) => {
+            if (!this.live) return;
             car.brake(0);
             this.drivingDirection = 0;
             car.steer(0);
