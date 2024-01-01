@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>
+            Three.js TypeScript Tutorials by Sean Bradley :
+            https://sbcode.net/threejs
+        </title>
+        <style>
+            body {
+                overflow: hidden;
+                margin: 0px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <script type="module" src="bundle.js"></script>
+        <div id="top-info">
+            <div id="gameover-container-1"></div>
+            <div id="gameover-container-2"></div>
+        </div>
+        <div id="dashboard-container">
+            DashBoard
+        </div>
+        <div id="bottom-info">
+            <div id="distance-container">Distance</div>
+            <div id="aggressive-distance-container">Aggressive Distance</div>
+        </div>
+    </body>
+    
+    <style>
+#top-info {
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    text-align: center; /* 文字居中 */
+    z-index: 9999; /* 较高的 z-index 值 */
+    font-size: 80px; /* 字体大小 */
+    color: #fff; /* 字体颜色 */
+}
+#dashboard-container {
+    position: absolute;
+    bottom: 1%;
+    right: 10%;
+    width: 400px;
+    height: 400px;
+}
+#bottom-info {
+    position: absolute;
+    bottom: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    text-align: center; /* 文字居中 */
+    z-index: 9999; /* 较高的 z-index 值 */
+    font-size: 30px; /* 字体大小 */
+    color: #fff; /* 字体颜色 */
+}
+#aggressive-distance-container {
+    color: #f00; /* 字体颜色 */
+}
+    </style>
+</html>
