@@ -2,6 +2,7 @@ import * as THREE from "three";
 import * as CANNON from "cannon-es";
 import { PhysicalObject } from "./physicalObject";
 import { CANNONMaterial } from "./cannonMaterial";
+import { update_drift } from "./drift";
 
 interface CarConfig {
     chassisSizeX: number;
@@ -92,12 +93,18 @@ export class Car {
     private configName: ConfigName;
     private vehicle: CANNON.RaycastVehicle;
     private wheel3ds: (THREE.Object3D | undefined)[];
-    private wheelBodys: CANNON.Body[];
+    wheelBodys: CANNON.Body[];
     private wheelIsBroken: boolean[];
     private collisionLockUntil: number;
     private usingModel: boolean;
+    scene: THREE.Scene;
+    world: CANNON.World;
+    is_user: boolean;
 
-    constructor(posX: number, posY: number, posZ: number, configName: ConfigName, scene: THREE.Scene, world: CANNON.World) {
+    constructor(posX: number, posY: number, posZ: number, configName: ConfigName, scene: THREE.Scene, world: CANNON.World, is_user: boolean=false) {
+        this.scene = scene
+        this.world = world
+        this.is_user = is_user
         this.obj3d = new THREE.Group();
         const config = configMap[configName];
         if (!config) console.error(`no config (${configName})`)
@@ -298,6 +305,7 @@ export class Car {
                 w.rotateZ(this.vehicle.wheelInfos[i].steering);
             }
         }
+        update_drift(this)
     }
 
     // call this after initialization if this car is controlled by player
