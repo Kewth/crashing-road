@@ -55,8 +55,6 @@ const aggressiveAI = new AggressiveAI(new Car(0, -20, 2, 'police', scene, world)
 //     dummyAIs.push(new DummyAI(0, 10 + 20 * i, 2, scene, world, jumpGenerator.obs_list));
 // }
 
-const truckGenerator = new TruckGenerator(player.obj3d, scene, world);
-
 const distanceRemainder = new DistanceRemainder(player.obj3d, scene);
 
 const boundary = new Boundary(player.obj3d, scene, world)
@@ -224,15 +222,21 @@ textureLoader.load(
 const bottomInfo = new BottomInfo(player.obj3d, aggressiveAI.car.obj3d);
 const dashboard = new DashBoard(() => 3.6 * player.car.velocity.length()); // pass in speed in km/h
 
-const clock = new THREE.Clock();
-let delta;
+const clockWrapper = {
+    clock: new THREE.Clock(),
+    delta: 0,
+    updDelta() {
+        this.delta = Math.min(this.clock.getDelta(), 0.1);
+    },
+}
+
+const truckGenerator = new TruckGenerator(player.obj3d, clockWrapper, scene, world);
 
 type UpdateObject = { update(): void }
 const updObjs: UpdateObject[] = [
     player,
     jumpGenerator,
     laneFenceGenerator,
-    truckGenerator,
     aggressiveAI,
     boundary,
     light,
@@ -241,6 +245,7 @@ const updObjs: UpdateObject[] = [
     dashboard,
     // cannonDebugger,
     distanceRemainder,
+    truckGenerator,
 ]
 
 // let npcCars: (DummyAI|AggressiveAI)[] = [
@@ -252,8 +257,8 @@ document.body.appendChild(stats.dom)
 
 function animate() {
     requestAnimationFrame(animate);
-    delta = Math.min(clock.getDelta(), 0.1);
-    world.step(delta);
+    clockWrapper.updDelta();
+    world.step(clockWrapper.delta);
     updObjs.forEach(obj => obj.update());
     // for(let i = 0; i < npcCars.length; i++) {
     //     const npcCar = npcCars[i];

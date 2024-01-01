@@ -12,6 +12,7 @@ interface CarConfig {
     wheelOffsetZ: number;
     wheelRadius: number;
     mass: number;
+    engineForce: number;
 }
 
 type ConfigName = "ferrari" | "truck" | "police"
@@ -25,6 +26,7 @@ const configMap: {[key in ConfigName]: CarConfig} = {
         wheelOffsetZ: 0,
         wheelRadius: 0.4,
         mass: 500,
+        engineForce: 1500,
     },
     "truck" : {
         chassisSizeX: 2.2,
@@ -35,6 +37,7 @@ const configMap: {[key in ConfigName]: CarConfig} = {
         wheelOffsetZ: 0.8,
         wheelRadius: 0.5,
         mass: 1000,
+        engineForce: 2500,
     },
     "police" : {
         chassisSizeX: 2.0,
@@ -45,6 +48,7 @@ const configMap: {[key in ConfigName]: CarConfig} = {
         wheelOffsetZ: 0,
         wheelRadius: 0.4,
         mass: 500,
+        engineForce: 1250,
     },
 }
 const modelMap: {[key in ConfigName]: THREE.Object3D | undefined} = {
@@ -63,7 +67,6 @@ const modelMap: {[key in ConfigName]: THREE.Object3D | undefined} = {
 // const carMass = 500;
 
 const maxSteerVal = 0.5;
-const maxForce = 1500;
 const brakeForce = 500;
 
 const chassisMaterial = new THREE.MeshPhongMaterial({ color: 0x66ccff });
@@ -92,10 +95,11 @@ export class Car {
     private configName: ConfigName;
     private vehicle: CANNON.RaycastVehicle;
     private wheel3ds: (THREE.Object3D | undefined)[];
-    wheelBodys: CANNON.Body[];
+    private wheelBodys: CANNON.Body[];
     private wheelIsBroken: boolean[];
     private collisionLockUntil: number;
     private usingModel: boolean;
+    private engineForce: number;
 
     constructor(posX: number, posY: number, posZ: number, configName: ConfigName, scene: THREE.Scene, world: CANNON.World) {
         this.obj3d = new THREE.Group();
@@ -219,6 +223,7 @@ export class Car {
         // other property
         this.usingModel = false;
         this.collisionLockUntil = Date.now();
+        this.engineForce = config.engineForce;
     }
 
 
@@ -232,9 +237,9 @@ export class Car {
         }
 
         // Dispose materials used by the car
-        chassisMaterial.dispose();
-        wheelMaterial.dispose();
-        brokenWheelMaterial.dispose();
+        // chassisMaterial.dispose();
+        // wheelMaterial.dispose();
+        // brokenWheelMaterial.dispose();
 
         // Dispose geometries used by the car
         // chassisGeometry.dispose();
@@ -252,7 +257,7 @@ export class Car {
 
     applyEngineForce(r: number, i: number) {
         if (!this.wheelIsBroken[i])
-            this.vehicle.applyEngineForce(r * maxForce, i);
+            this.vehicle.applyEngineForce(r * this.engineForce, i);
     }
     setSteeringValue(r: number, i: number) {
         if (!this.wheelIsBroken[i])

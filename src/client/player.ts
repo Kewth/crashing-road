@@ -9,7 +9,7 @@ export class Player {
     constructor(car: Car) {
         this.car = car;
         this.live = true;
-        this.driftCrt = new DriftCreator(car, 1000);
+        this.driftCrt = new DriftCreator(car);
         this.car.chassisBody.addEventListener("collide", (e: any) => {
             if (this.live && e.body.configName === "police") {
                 // game over

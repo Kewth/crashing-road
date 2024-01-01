@@ -14,11 +14,11 @@ export class DriftCreator {
     dirft_index: number
     dirft_limit: number
 
-    constructor(car: Car, limit: number) {
+    constructor(car: Car) {
         this.car = car;
         this.dirft_list = [];
         this.dirft_index = 0;
-        this.dirft_limit = limit;
+        this.dirft_limit = 1000;
         for (let i = 0; i < this.dirft_limit; i ++)
             this.dirft_list.push(new THREE.Mesh(driftGeometry, driftMaterial));
     }
