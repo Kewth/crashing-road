@@ -1,6 +1,13 @@
 import { Car } from "./car";
 import { DriftCreator } from "./drift";
 
+function getX (event: TouchEvent) {
+    return (event.touches[0].pageX / window.innerWidth) * 2 - 1;
+}
+function getY (event: TouchEvent) {
+    return (event.touches[0].pageY / window.innerHeight) * 2 - 1;
+}
+
 export class Player {
     car: Car
     live: boolean
@@ -50,6 +57,23 @@ export class Player {
                 case " ": car.brake(0); break;
             }
         });
+        // on mobile
+        document.addEventListener("touchstart", (event) => {
+            const x = getX(event);
+            const y = getY(event);
+            this.drivingDirection = -y;
+            car.steer(-x);
+        })
+        document.addEventListener("touchmove", (event) => {
+            const x = getX(event);
+            const y = getY(event);
+            this.drivingDirection = -y;
+            car.steer(-x);
+        })
+        document.addEventListener("touchend", (event) => {
+            this.drivingDirection = 0;
+            car.steer(0);
+        })
         // drive control
         this.car.world().addEventListener("preStep", () => {
             const r = this.drivingDirection * (1 - this.car.velocity.length() / 50);
