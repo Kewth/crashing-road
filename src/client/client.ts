@@ -220,7 +220,7 @@ textureLoader.load(
 // )
 
 const bottomInfo = new BottomInfo(player.obj3d, aggressiveAI.car.obj3d);
-const dashboard = new DashBoard(() => 3.6 * player.car.velocity.length()); // pass in speed in km/h
+const dashboard = new DashBoard(() => 3.6 * player.car.velocity.length(), window); // pass in speed in km/h
 
 const clockWrapper = {
     clock: new THREE.Clock(),
