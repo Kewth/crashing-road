@@ -1,12 +1,15 @@
 import { Car } from "./car";
+import { DriftCreator } from "./drift";
 
 export class Player {
     car: Car
     live: boolean
+    driftCrt: DriftCreator
 
     constructor(car: Car) {
         this.car = car;
         this.live = true;
+        this.driftCrt = new DriftCreator(car, 1000);
         this.car.chassisBody.addEventListener("collide", (e: any) => {
             if (this.live && e.body.configName === "police") {
                 // game over
@@ -49,6 +52,7 @@ export class Player {
 
     update() {
         this.car.update();
+        this.driftCrt.update();
     }
 
     get obj3d () { return this.car.obj3d; }

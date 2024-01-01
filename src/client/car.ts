@@ -2,7 +2,6 @@ import * as THREE from "three";
 import * as CANNON from "cannon-es";
 import { PhysicalObject } from "./physicalObject";
 import { CANNONMaterial } from "./cannonMaterial";
-import { update_drift } from "./drift";
 
 interface CarConfig {
     chassisSizeX: number;
@@ -299,7 +298,6 @@ export class Car {
                 w.rotateZ(this.vehicle.wheelInfos[i].steering);
             }
         }
-        update_drift(this)
     }
 
     // call this after initialization if this car is controlled by player

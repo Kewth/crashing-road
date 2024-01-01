@@ -182,7 +182,6 @@ gltfLoader.load(
         // scene.add(fenceModel);
         boundary.useFenceModel(fenceModel);
         laneFenceGenerator.useModel(fenceModel);
-        console.log(fenceModel);
     },
     undefined,
     err => { console.error(err) }

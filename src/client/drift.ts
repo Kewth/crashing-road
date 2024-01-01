@@ -8,36 +8,45 @@ import { threadId } from "worker_threads";
 const driftMaterial = new THREE.MeshPhongMaterial({ color: 0x333333, side: THREE.DoubleSide });
 const driftGeometry = new THREE.PlaneGeometry(0.1 , 0.1);
 
-function update_drift(car: Car) {
-    if(is_drifting(car)) {
-        let carHeading = car.direction()
-        carHeading = carHeading.multiplyScalar(1)
-        let carHeadingNormal = new THREE.Vector3(-carHeading.y, carHeading.x, 0)
-        carHeadingNormal = carHeadingNormal.multiplyScalar(0.4)
+export class DriftCreator {
+    car: Car
+    dirft_list: THREE.Mesh[]
+    dirft_index: number
+    dirft_limit: number
 
-        const drift_mark1 = new THREE.Mesh(driftGeometry, driftMaterial);
-        drift_mark1.receiveShadow = true;
-        drift_mark1.position.set(car.pos.x+carHeading.x-carHeadingNormal.x, car.pos.y+carHeading.y-carHeadingNormal.y, 0.01);
-        car.scene().add(drift_mark1)
+    constructor(car: Car, limit: number) {
+        this.car = car;
+        this.dirft_list = [];
+        this.dirft_index = 0;
+        this.dirft_limit = limit;
+        for (let i = 0; i < this.dirft_limit; i ++)
+            this.dirft_list.push(new THREE.Mesh(driftGeometry, driftMaterial));
+    }
 
-        const drift_mark2 = new THREE.Mesh(driftGeometry, driftMaterial);
-        drift_mark2.receiveShadow = true;
-        drift_mark2.position.set(car.pos.x+carHeading.x+carHeadingNormal.x, car.pos.y+carHeading.y+carHeadingNormal.y, 0.01);
-        car.scene().add(drift_mark2)
+    update() {
+        if (is_drifting(this.car)) {
+            let carHeading = this.car.direction()
+            carHeading = carHeading.multiplyScalar(1)
+            let carHeadingNormal = new THREE.Vector3(-carHeading.y, carHeading.x, 0)
+            carHeadingNormal = carHeadingNormal.multiplyScalar(0.4)
 
-        const drift_mark3 = new THREE.Mesh(driftGeometry, driftMaterial);
-        drift_mark3.receiveShadow = true;
-        drift_mark3.position.set(car.pos.x-carHeading.x-carHeadingNormal.x, car.pos.y-carHeading.y-carHeadingNormal.y, 0.01);
-        car.scene().add(drift_mark3)
+            const drift_mark1 = this.dirft_list[this.dirft_index];
+            drift_mark1.position.set(this.car.pos.x + carHeading.x - carHeadingNormal.x, this.car.pos.y + carHeading.y - carHeadingNormal.y, 0.01);
+            const drift_mark2 = this.dirft_list[(this.dirft_index + 1) % this.dirft_limit];
+            drift_mark2.position.set(this.car.pos.x + carHeading.x + carHeadingNormal.x, this.car.pos.y + carHeading.y + carHeadingNormal.y, 0.01);
+            const drift_mark3 = this.dirft_list[(this.dirft_index + 2) % this.dirft_limit];
+            drift_mark3.position.set(this.car.pos.x - carHeading.x - carHeadingNormal.x, this.car.pos.y - carHeading.y - carHeadingNormal.y, 0.01);
+            const drift_mark4 = this.dirft_list[(this.dirft_index + 3) % this.dirft_limit];
+            drift_mark4.position.set(this.car.pos.x - carHeading.x + carHeadingNormal.x, this.car.pos.y - carHeading.y + carHeadingNormal.y, 0.01);
+            this.dirft_index = (this.dirft_index + 4) % this.dirft_limit;
 
-        const drift_mark4 = new THREE.Mesh(driftGeometry, driftMaterial);
-        drift_mark4.receiveShadow = true;
-        drift_mark4.position.set(car.pos.x-carHeading.x+carHeadingNormal.x, car.pos.y-carHeading.y+carHeadingNormal.y, 0.01);
-        car.scene().add(drift_mark3)
+            [drift_mark1, drift_mark2, drift_mark3, drift_mark4].forEach(drift_mark => {
+                drift_mark.receiveShadow = true;
+                drift_mark.parent || this.car.scene().add(drift_mark);
+            })
+        }
     }
 }
-
-export{update_drift}
 
 function is_drifting(car: Car) {
     // const car_heading = car.obj3d.getWorldDirection(new THREE.Vector3()).normalize();
@@ -48,7 +57,7 @@ function is_drifting(car: Car) {
     const car_heading = car.direction()
     // console.log(car_heading)
     const velocity_direction = new THREE.Vector3(car.velocity.x, car.velocity.y, 0).normalize();
-    console.log(velocity_direction)
+    // console.log(velocity_direction)
     const dot_product = car_heading.dot(velocity_direction);
     if(Math.abs(dot_product) < 0.997) {
         return true;

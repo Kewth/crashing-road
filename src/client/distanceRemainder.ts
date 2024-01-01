@@ -46,7 +46,6 @@ export class DistanceRemainder {
             mesh.receiveShadow = true;
             this.scene.add(mesh);
             this.nowDis += 100;
-            console.log(this.nowDis);
         }
     }
 }
