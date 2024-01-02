@@ -58,6 +58,28 @@ export class LaneFenceGenerator {
         this.usingModel = true;
     }
 
+    hasFenceOnTheLeft(lane: number, y: number): boolean {
+        if (lane == 0) return true;
+        const laneWidth = Setting.groundWidth / Setting.numberLane;
+        const x = (lane + 0.5) * laneWidth - Setting.groundWidth / 2;
+        return this.wall_list.find(wall => {
+            const pos = wall.body.position;
+            return x - laneWidth < pos.x && pos.x < x
+                && pos.y - 0.5 * wallLength < y && y < pos.y + 0.5 * wallLength
+        }) !== undefined;
+    }
+
+    hasFenceOnTheRight(lane: number, y: number): boolean {
+        if (lane == Setting.numberLane - 1) return true;
+        const laneWidth = Setting.groundWidth / Setting.numberLane;
+        const x = (lane + 0.5) * laneWidth - Setting.groundWidth / 2;
+        return this.wall_list.find(wall => {
+            const pos = wall.body.position;
+            return x < pos.x && pos.x < x + laneWidth
+                && pos.y - 0.5 * wallLength < y && y < pos.y + 0.5 * wallLength
+        }) !== undefined;
+    }
+
     private addWallInRandomPos(wall: PhysicalObject) {
         const lane = Math.floor(Math.random() * (Setting.numberLane - 1));
         wall.body.position.set(

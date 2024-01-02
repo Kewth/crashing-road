@@ -23,6 +23,9 @@ import { LaneFenceGenerator } from "./laneFence";
 import { TruckGenerator } from "./truck";
 import { DistanceRemainder } from "./distanceRemainder";
 import { Player } from "./player";
+import { ObsTester } from "./obsTest";
+import { DummyLaneAI } from "./dummyLaneAI";
+import { AggressiveLaneAI } from "./aggressiveLaneAI";
 
 const scene = new THREE.Scene();
 const world = new CANNON.World();
@@ -230,7 +233,20 @@ const clockWrapper = {
     },
 }
 
-const truckGenerator = new TruckGenerator(player.obj3d, clockWrapper, scene, world);
+const obsTest = new ObsTester(laneFenceGenerator);
+
+const truckGenerator = new TruckGenerator(player.obj3d, clockWrapper, scene, world,
+    (posX, posY, posZ) => {
+        if (Math.random() < 0.7) {
+            const car = new Car(posX, posY, posZ, 'truck', scene, world);
+            return new DummyLaneAI(car, 20);
+        }
+        else {
+            const car = new Car(posX, posY, posZ, 'police', scene, world);
+            return new AggressiveLaneAI(car, player.car, 20, 40, 20);
+        }
+    }
+);
 
 type UpdateObject = { update(): void }
 const updObjs: UpdateObject[] = [

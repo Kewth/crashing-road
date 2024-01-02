@@ -18,8 +18,8 @@ export class DummyLaneAI {
         const laneWidth = Setting.groundWidth / Setting.numberLane;
         const lane = Math.floor((this.car.pos.x + Setting.groundWidth * 0.5) / laneWidth);
         const targetX = - Setting.groundWidth * 0.5 + laneWidth * (lane + 0.5);
-        const dt = 0.1;
-        const nextX = this.car.pos.x + this.car.direction().x * this.car.velocity.x * dt;
-        this.car.steer((nextX - targetX) / laneWidth);
+        const dt = 1;
+        const nextX = this.car.pos.x + this.car.velocity.x * dt;
+        this.car.steer((nextX - targetX) / laneWidth * 0.5);
     }
 }

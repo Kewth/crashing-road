@@ -1,37 +1,36 @@
 import * as THREE from "three";
 import * as CANNON from "cannon-es";
-import { PhysicalObject } from "./physicalObject";
 import { Setting } from "./setting";
 import { Car } from "./car";
-import { DummyLaneAI } from "./dummyLaneAI";
 
 const generateLength = 30;
-const truckLimit = 15;
-const policeLimit = 5;
 
 interface Clock {
     delta: number
 }
+interface CarAI {
+    car: Car
+    update(): void
+}
+type CallBack = (posX: number, poxY: number, posZ: number) => CarAI;
 
 export class TruckGenerator {
     private focusObj: THREE.Object3D;
     private clock: Clock;
-    private scene: THREE.Scene;
-    private world: CANNON.World;
-    private truck_list: DummyLaneAI[];
+    private truck_list: CarAI[];
     private minY: number;
     private maxY: number;
     private baselineV: number;
+    private ai_construct_callback: CallBack;
 
-    constructor(obj: THREE.Object3D, clock: Clock, scene: THREE.Scene, world: CANNON.World) {
+    constructor(obj: THREE.Object3D, clock: Clock, scene: THREE.Scene, world: CANNON.World, ai_construct_callback: CallBack) {
         this.focusObj = obj;
         this.clock = clock;
-        this.scene = scene;
-        this.world = world;
         this.truck_list = [];
         this.minY = 0;
         this.maxY = 0;
         this.baselineV = 0;
+        this.ai_construct_callback = ai_construct_callback;
         // for (let i = 0; i < 15; i++) {
         //     const truck = new Car(0, 1000 + i * 50, 2, 'truck', this.scene, this.world);
         //     truck.update();
@@ -58,13 +57,13 @@ export class TruckGenerator {
         const posX1 = -Setting.groundWidth / 2 + (lane1 + 0.5) * (Setting.groundWidth / Setting.numberLane);
         const posX2 = -Setting.groundWidth / 2 + (lane2 + 0.5) * (Setting.groundWidth / Setting.numberLane);
         const posZ = 2;
-        const truck1 = new Car(posX1, posY, posZ, Math.random() < 0.8 ? 'truck' : 'police', this.scene, this.world);
-        this.truck_list.push(new DummyLaneAI(truck1, 20));
-        truck1.velocity.set(0, this.baselineV, 0);
+        const ai1 = this.ai_construct_callback(posX1, posY, posZ)
+        this.truck_list.push(ai1);
+        ai1.car.velocity.set(0, this.baselineV, 0);
         if (lane2 != lane1) {
-            const truck2 = new Car(posX2, posY, posZ, Math.random() < 0.8 ? 'truck' : 'police', this.scene, this.world);
-            this.truck_list.push(new DummyLaneAI(truck2, 20));
-            truck2.velocity.set(0, this.baselineV, 0);
+            const ai2 = this.ai_construct_callback(posX2, posY, posZ)
+            this.truck_list.push(ai2);
+            ai2.car.velocity.set(0, this.baselineV, 0);
         }
     }
 
