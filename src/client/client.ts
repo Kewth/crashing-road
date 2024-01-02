@@ -237,7 +237,7 @@ const obsTest = new ObsTester(laneFenceGenerator);
 
 const truckGenerator = new TruckGenerator(player.obj3d, clockWrapper, scene, world,
     (posX, posY, posZ) => {
-        if (Math.random() < 0.7) {
+        if (Math.random() < 0.7 && posY > player.car.pos.y) {
             const car = new Car(posX, posY, posZ, 'truck', scene, world);
             return new DummyLaneAI(car, 20);
         }
