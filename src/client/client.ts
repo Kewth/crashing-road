@@ -26,6 +26,7 @@ import { Player } from "./player";
 import { ObsTester } from "./obsTest";
 import { DummyLaneAI } from "./dummyLaneAI";
 import { AggressiveLaneAI } from "./aggressiveLaneAI";
+import { ScoreMantainer } from "./score";
 
 const scene = new THREE.Scene();
 const world = new CANNON.World();
@@ -235,14 +236,19 @@ const clockWrapper = {
 
 const obsTest = new ObsTester(laneFenceGenerator);
 
+const scoreMantainer = new ScoreMantainer(player.car);
+
 const truckGenerator = new TruckGenerator(player.obj3d, clockWrapper, scene, world,
     (posX, posY, posZ) => {
         if (Math.random() < 0.7 && posY > player.car.pos.y) {
             const car = new Car(posX, posY, posZ, 'truck', scene, world);
+            scoreMantainer.addFocus(car.obj3d, 1);
             return new DummyLaneAI(car, 20);
         }
         else {
             const car = new Car(posX, posY, posZ, 'police', scene, world);
+            if (posY > player.car.pos.y)
+                scoreMantainer.addFocus(car.obj3d, 3);
             return new AggressiveLaneAI(car, player.car, 20, 40, 20);
         }
     }

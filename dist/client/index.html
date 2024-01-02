@@ -17,6 +17,9 @@
     <body onselectstart="return false">
         <script type="module" src="bundle.js"></script>
         <div id="top-info">
+            <div id="score-container">
+                Score
+            </div>
             <div id="gameover-container-1"></div>
             <div id="gameover-container-2"></div>
         </div>
@@ -24,6 +27,8 @@
             w/a/s/d: move<br>
             space: brake<br>
             refresh to restart<br>
+            3 points for passing a police<br>
+            1 points for passing a truck<br>
             try to avoid the police cars!
         </div>
         <div id="dashboard-container">
@@ -38,7 +43,7 @@
     <style>
 #top-info {
     position: absolute;
-    top: 10%;
+    top: 0%;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -47,6 +52,9 @@
     z-index: 9999; /* 较高的 z-index 值 */
     font-size: 80px; /* 字体大小 */
     color: #fff; /* 字体颜色 */
+}
+#score-container {
+    font-size: 40px;
 }
 #hint-container {
     position: absolute;
