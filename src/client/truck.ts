@@ -52,38 +52,56 @@ export class TruckGenerator {
     //     return ais.length > 0 ? ais[Math.floor(Math.random() * ais.length)] : undefined;
     // }
 
+    generateNewCar(posY: number) {
+        const lane1 = Math.floor(Math.random() * Setting.numberLane);
+        const lane2 = Math.floor(Math.random() * Setting.numberLane);
+        const posX1 = -Setting.groundWidth / 2 + (lane1 + 0.5) * (Setting.groundWidth / Setting.numberLane);
+        const posX2 = -Setting.groundWidth / 2 + (lane2 + 0.5) * (Setting.groundWidth / Setting.numberLane);
+        const posZ = 2;
+        const truck1 = new Car(posX1, posY, posZ, Math.random() < 0.8 ? 'truck' : 'police', this.scene, this.world);
+        this.truck_list.push(new DummyLaneAI(truck1, 20));
+        truck1.velocity.set(0, this.baselineV, 0);
+        if (lane2 != lane1) {
+            const truck2 = new Car(posX2, posY, posZ, Math.random() < 0.8 ? 'truck' : 'police', this.scene, this.world);
+            this.truck_list.push(new DummyLaneAI(truck2, 20));
+            truck2.velocity.set(0, this.baselineV, 0);
+        }
+    }
+
     update() {
         const carY = this.focusObj.position.y;
+        // destroy
+        if (this.maxY > carY + Setting.generateDistance + 50) {
+            const ai = this.truck_list.find(
+                ai => ai.car.pos.y > carY + Setting.generateDistance + 50
+            );
+            if (ai) {
+                ai.car.destroy();
+                this.truck_list.splice(this.truck_list.indexOf(ai), 1);
+                this.maxY -= generateLength;
+            }
+        }
+        if (this.minY < carY - Setting.backwardDistance - 50) {
+            const ai = this.truck_list.find(
+                ai => ai.car.pos.y < carY - Setting.generateDistance - 50
+            );
+            if (ai) {
+                ai.car.destroy();
+                this.truck_list.splice(this.truck_list.indexOf(ai), 1);
+                this.minY += generateLength;
+            }
+        }
+        // generate
         while (this.minY - generateLength >= carY - Setting.backwardDistance) {
-            const lane = Math.floor(Math.random() * Setting.numberLane);
-            const posX = -Setting.groundWidth / 2 + (lane + 0.5) * (Setting.groundWidth / Setting.numberLane);
-            const posY = this.minY - generateLength * 0.5;
-            const posZ = 2;
-            const truck = new Car(posX, posY, posZ, Math.random() < 0.9 ? 'truck' : 'police', this.scene, this.world);
-            this.truck_list.push(new DummyLaneAI(truck, 20));
-            truck.velocity.set(0, this.baselineV, 0);
             this.minY -= generateLength;
+            this.generateNewCar(this.minY);
+            console.log(`generate backword ${this.minY} ${carY - Setting.backwardDistance}`)
         }
         while (this.maxY + generateLength <= carY + Setting.generateDistance) {
-            const lane = Math.floor(Math.random() * Setting.numberLane);
-            const posX = -Setting.groundWidth / 2 + (lane + 0.5) * (Setting.groundWidth / Setting.numberLane);
-            const posY = this.maxY + generateLength * 0.5;
-            const posZ = 2;
-            const truck = new Car(posX, posY, posZ, Math.random() < 0.9 ? 'truck' : 'police', this.scene, this.world);
-            this.truck_list.push(new DummyLaneAI(truck, 20));
-            truck.velocity.set(0, this.baselineV, 0);
             this.maxY += generateLength;
+            this.generateNewCar(this.maxY);
+            console.log('generate forward')
         }
-        const forwardAIs = this.truck_list.filter(
-            ai => ai.car.pos.y > carY + Setting.generateDistance + 50
-        );
-        const backwardAIs = this.truck_list.filter(
-            ai => ai.car.pos.y < carY - Setting.backwardDistance - 50
-        );
-        forwardAIs.forEach(ai => {
-            ai.car.destroy();
-            this.truck_list.splice(this.truck_list.indexOf(ai), 1);
-        })
         // while (dis + Setting.generateDistance > this.nowDis) {
         //     if (Math.random() < generateProb) {
         //         const lane = Math.floor(Math.random() * Setting.numberLane);
