@@ -14,13 +14,18 @@ export class Player {
     live: boolean
     driftCrt: DriftCreator
     drivingDirection: number
+    collision_sound: any
 
     constructor(car: Car) {
         this.car = car;
         this.live = true;
         this.driftCrt = new DriftCreator(car);
         this.drivingDirection = 0;
+        this.collision_sound = new Audio('sounds/crashing_sound.mp3');
         this.car.chassisBody.addEventListener("collide", (e: any) => {
+
+            this.collision_sound.play();
+            
             if (this.live && e.body.configName === "police") {
                 // game over
                 this.live = false;
