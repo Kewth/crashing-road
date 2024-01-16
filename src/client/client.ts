@@ -229,9 +229,14 @@ const dashboard = new DashBoard(() => 3.6 * player.car.velocity.length(), window
 const clockWrapper = {
     clock: new THREE.Clock(),
     delta: 0,
+    running: false,
     updDelta() {
-        this.delta = Math.min(this.clock.getDelta(), 0.1);
+        this.delta = this.running ? Math.min(this.clock.getDelta(), 0.1) : 0;
     },
+    start() {
+        this.clock.getDelta();
+        this.running = true;
+    }
 }
 
 const obsTest = new ObsTester(laneFenceGenerator);
@@ -277,6 +282,12 @@ const updObjs: UpdateObject[] = [
 const stats = new Stats()
 document.body.appendChild(stats.dom)
 
+const playButton = document.getElementById("play-button") as HTMLButtonElement;
+playButton.addEventListener("click", () => {
+    playButton.style.display = "none";
+    clockWrapper.start();
+});
+
 function animate() {
     requestAnimationFrame(animate);
     clockWrapper.updDelta();
@@ -305,5 +316,8 @@ function render() {
 }
 
 // const narrowWall = new NarrowWall(100, scene, world)
+
+// const backgroundAudio = new Audio('sounds/background.wav');
+// backgroundAudio.loop = true;
 
 animate();

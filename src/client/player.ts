@@ -36,6 +36,11 @@ export class Player {
                 container1.textContent = `GAME OVER`
                 const container2 = document.getElementById('gameover-container-2') as HTMLDivElement
                 container2.textContent = `You traveled ${this.car.pos.y.toFixed(0)} m`
+                const reloadButton = document.getElementById("reload-button") as HTMLButtonElement;
+                reloadButton.style.display = "block";
+                reloadButton.addEventListener("click", () => {
+                    location.reload();
+                });
             }
         })
         // Add force on keydown

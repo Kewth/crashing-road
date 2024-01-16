@@ -23,6 +23,8 @@
             <div id="gameover-container-1"></div>
             <div id="gameover-container-2"></div>
         </div>
+        <button id="play-button">PLAY</button>
+        <button id="reload-button">TRY AGAIN</button>
         <div id="hint-container">
             w/a/s/d: move<br>
             space: brake<br>
@@ -39,7 +41,7 @@
             <div id="aggressive-distance-container">Aggressive Distance</div>
         </div>
     </body>
-    
+
     <style>
 #top-info {
     position: absolute;
@@ -52,6 +54,49 @@
     z-index: 9999; /* 较高的 z-index 值 */
     font-size: 80px; /* 字体大小 */
     color: #fff; /* 字体颜色 */
+}
+#play-button {
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: white;
+    color: black;
+    border: 2px solid #4CAF50;
+    padding: 60px 120px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 60px;
+    margin: 4px 2px;
+    transition-duration: 0.4s;
+    cursor: pointer;
+}
+#reload-button {
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: white;
+    color: black;
+    border: 2px solid #bb1a2b;
+    padding: 60px 120px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 60px;
+    margin: 4px 2px;
+    transition-duration: 0.4s;
+    cursor: pointer;
+    display: none;
+}
+#play-button:hover {
+  background-color: #4CAF50;
+  color: white;
+}
+#reload-button:hover {
+  background-color: #bb1a2b;
+  color: white;
 }
 #score-container {
     font-size: 40px;
