@@ -341,7 +341,7 @@ export class Car {
     private useModel(model: THREE.Object3D) {
         if (this.usingModel) return;
         model = model.clone();
-        model.position.z -= configMap[this.configName].chassisSizeZ / 2;
+        model.position.z -= configMap[this.configName].chassisSizeZ / 2 + 0.3;
         this.obj3d.remove(this.obj3d.children[0]);
         const wheelNames = ['wheel_fr', 'wheel_fl', 'wheel_rr', 'wheel_rl'];
         for (let i = 0; i < 4; i ++) {

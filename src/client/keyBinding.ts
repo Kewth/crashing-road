@@ -10,11 +10,7 @@ export function initKeyBinding(car: Car, camera: TrailCamera) {
     // Add force on keydown
     document.addEventListener("keydown", (event) => {
         switch (event.key) {
-            // case "w": car.drive(1); break;
-            // case "s": car.drive(-1); break;
-            // case "a": car.steer(1); break;
-            // case "d": car.steer(-1); break;
-            // case " ": car.brake(1); break;
+            case "q": camera.toggleFirstPerson(); break;
             case "ArrowUp": camera.move = -0.01; break;
             case "ArrowDown": camera.move = +0.01; break;
         }
