@@ -11,7 +11,7 @@ export class DummyLaneAI {
         this.car = car;
         this.targetV = targetV;
     }
-    
+
     update() {
         this.car.update();
         this.car.drive(this.car.velocity.length() > this.targetV ? 0 : 1);

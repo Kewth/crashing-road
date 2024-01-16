@@ -15,16 +15,23 @@ export class Player {
     driftCrt: DriftCreator
     drivingDirection: number
     collision_sound: HTMLAudioElement
+    playAudio: boolean
 
     constructor(car: Car) {
         this.car = car;
         this.live = true;
         this.driftCrt = new DriftCreator(car);
         this.drivingDirection = 0;
-        this.collision_sound = new Audio('sounds/crashing_sound.mp3');
+        this.collision_sound = new Audio('sounds/crash3.mp3');
+        this.playAudio = true;
         this.car.chassisBody.addEventListener("collide", (e: any) => {
 
-            this.collision_sound.play();
+            if (this.playAudio) {
+                const r = e.contact.getImpactVelocityAlongNormal();
+                const clone = this.collision_sound.cloneNode(true) as HTMLAudioElement
+                clone.volume = Math.min(Math.max(0, r / 20), 1);
+                clone.play();
+            }
 
             if (this.live && e.body.configName === "police") {
                 // game over
@@ -70,6 +77,10 @@ export class Player {
         });
         // on mobile
         document.addEventListener("touchstart", (event) => {
+            const hint = document.getElementById("hint-container") as HTMLDivElement;
+            hint.style.display = "none";
+            const dash = document.getElementById("dashboard-container") as HTMLDivElement;
+            dash.style.display = "none";
             if (!this.live) return;
             car.brake(0);
             const x = getX(event);
@@ -89,11 +100,12 @@ export class Player {
         document.addEventListener("touchmove", (event) => {
             if (!this.live) return;
             car.brake(0);
-            const x = getX(event);
-            const y = getY(event);
+            const x = getX(event), y = getY(event);
             this.drivingDirection = -y;
             const car_heading = car.direction()
-            const velocity_direction = new THREE.Vector3(car.velocity.x, car.velocity.y, 0).normalize();
+            const velocity_direction = new THREE.Vector3(
+                car.velocity.x, car.velocity.y, 0
+            ).normalize();
             const dot_product = car_heading.dot(velocity_direction);
             if(-y < 0) {
                 if(dot_product > 0) {

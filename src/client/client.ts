@@ -40,7 +40,7 @@ scene.add(ambientLight);
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0xbfc8a7, 0.5);
+renderer.setClearColor(0x494d3f, 0.5);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
@@ -283,14 +283,34 @@ const updObjs: UpdateObject[] = [
 const stats = new Stats()
 document.body.appendChild(stats.dom)
 
+const bgMusic = new Audio('sounds/background.mp3') as HTMLAudioElement;
+bgMusic.loop = true;
+
 const playButton = document.getElementById("play-button") as HTMLButtonElement;
 playButton.addEventListener("click", () => {
     playButton.style.display = "none";
     clockWrapper.start();
+    bgMusic.play();
+});
+
+let pause = false;
+let playAudio = true;
+document.addEventListener("keydown", (event) => {
+    switch (event.key) {
+        case "f": pause = !pause; break;
+        case "e":
+            playAudio = !playAudio;
+            player.playAudio = playAudio;
+            scoreMantainer.playAudio = playAudio;
+            if (!playAudio) bgMusic.volume = 0;
+            else bgMusic.volume = 1;
+            break;
+    }
 });
 
 function animate() {
     requestAnimationFrame(animate);
+    if (pause) return;
     clockWrapper.updDelta();
     world.step(clockWrapper.delta);
     updObjs.forEach(obj => obj.update());

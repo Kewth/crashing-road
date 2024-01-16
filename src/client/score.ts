@@ -8,6 +8,7 @@ export class ScoreMantainer {
     list3d: THREE.Object3D[]
     listScore: number[]
     scoreContainer: HTMLDivElement
+    playAudio: boolean
 
     constructor(plyCar: Car) {
         this.plyCar = plyCar;
@@ -15,12 +16,14 @@ export class ScoreMantainer {
         this.list3d = [];
         this.listScore = [];
         this.scoreContainer = document.getElementById('score-container') as HTMLDivElement;
+        this.playAudio = true;
         setInterval(() => {
             this.list3d.forEach(obj => {
                 if (obj.position.y < plyCar.pos.y - 1) {
                     const index = this.list3d.indexOf(obj);
                     this.score += this.listScore[index];
-                    (scoreSound.cloneNode(true) as any).play();
+                    if (this.playAudio)
+                        (scoreSound.cloneNode(true) as any).play();
                     this.list3d.splice(index, 1);
                     this.listScore.splice(index, 1);
                 }
