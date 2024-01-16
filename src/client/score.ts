@@ -1,5 +1,7 @@
 import { Car } from "./car"
 
+const scoreSound = new Audio('sounds/score.wav');
+
 export class ScoreMantainer {
     plyCar: Car
     score: number
@@ -18,6 +20,7 @@ export class ScoreMantainer {
                 if (obj.position.y < plyCar.pos.y - 1) {
                     const index = this.list3d.indexOf(obj);
                     this.score += this.listScore[index];
+                    (scoreSound.cloneNode(true) as any).play();
                     this.list3d.splice(index, 1);
                     this.listScore.splice(index, 1);
                 }
